@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
@@ -16,24 +17,37 @@ interface IndividualTab {
 const tabs = [
   { fileName: 'index', title: 'Inicio', iconName: 'home' },
   { fileName: 'calendar', title: 'Calendario', iconName: 'calendar' },
+  { fileName: 'addTask', title: 'Agregar tarea', iconName: 'plus' },
+  { fileName: 'health', title: 'Salud', iconName: 'file-text-o' },
   { fileName: 'profile', title: 'Perfil', iconName: 'user' },
-] as IndividualTab[];
+] satisfies IndividualTab[];
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'blue' }}>
-      {tabs.map(({ fileName, title, iconName }) => (
-        <Tabs.Screen
-          key={fileName}
-          name={fileName}
-          options={{
-            title,
-            tabBarIcon: ({ color }) => (
-              <FontAwesome name={iconName} color={color} size={28} />
-            ),
-          }}
-        />
-      ))}
+    <Tabs screenOptions={{
+      tabBarShowLabel: false,
+      headerShown: false,
+      tabBarActiveTintColor: Colors.tabActive,
+      tabBarInactiveTintColor: Colors.tabInactive,
+    }}>
+      {tabs.map(({ fileName, title, iconName }) => {
+        if(fileName === "addTask"){
+
+        }
+
+        return(
+          <Tabs.Screen
+            key={fileName}
+            name={fileName}
+            options={{
+              title,
+              tabBarIcon: ({ color }) => (
+                <FontAwesome name={iconName} color={color} size={28} />
+              ),
+            }}
+          />
+        )
+      })}
     </Tabs>
   );
 }
