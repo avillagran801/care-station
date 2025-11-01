@@ -1,98 +1,99 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import PatientCard from '@/components/home/PatientCard'; // Asegúrate que la ruta es correcta
+import Colors from '@/constants/Colors';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+{/* Por obvias razones dejo esto hardcodeado para tener datos que visualizar :D */}
+const eventos = [
+  { id: '1', title: 'Cita con el Dr. Carmelo Breach', time: '10:00 AM - 11:00 AM', icon: '👜' },
+  { id: '2', title: 'Fisioterapia', time: '2:00 PM - 3:00 PM', icon: '👤' },
+];
+
+const tareas = [
+  { id: '1', title: 'Administrar Medicamentos', subtitle: 'Todos los dias 5:00 PM', icon: '💊' },
+  { id: '2', title: 'Preparar la comida', subtitle: 'Todos los dias 12:00 PM', icon: '👤' },
+  { id: '3', title: 'Comprar Medicamentos', subtitle: '2 Tareas asociadas', icon: '📖' },
+];
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.safeArea}>
+      {/* Esto esta estatico, despues debemos modificarlo para que pida los datos a las API's */}
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={require('../../assets/images/avatar.png')} style={styles.userAvatar} />
+            <View>
+              <Text style={styles.greeting}>¡Hola!</Text>
+              <Text style={styles.userName}>Ana Banana</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 24 }}>🔔</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <PatientCard />
+
+        {/* Aca podemos modificar el area de próximos eventos, tenemos que poner un onClick para que nos dirija a ese evento (lo mismo en la próxima sección) */}
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Próximos Eventos</Text>
+            <Text style={styles.sectionDate}>14 Octubre 2025</Text>
+        </View>
+        {eventos.map(evento => (
+            <View key={evento.id} style={styles.eventCard}>
+                <Text style={styles.cardIcon}>{evento.icon}</Text>
+                <View>
+                    <Text style={styles.cardTitle}>{evento.title}</Text>
+                    <Text style={styles.cardTime}>{evento.time}</Text>
+                </View>
+            </View>
+        ))}
+
+        {/* Aca podemos modificar el area de tareas pendientes */}
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Tareas Pendientes</Text>
+        </View>
+        {tareas.map(tarea => (
+            <View key={tarea.id} style={styles.taskCard}>
+                <Text style={styles.cardIcon}>{tarea.icon}</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{tarea.title}</Text>
+                    <Text style={styles.cardTime}>{tarea.subtitle}</Text>
+                </View>
+                <Text style={{ fontSize: 24 }}>⋮</Text>
+            </View>
+        ))}
+
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    safeArea: { flex: 1, backgroundColor: Colors.light.background },
+    container: { flex: 1, paddingHorizontal: 20 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 },
+    userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
+    greeting: { fontSize: 16, color: Colors.textLight },
+    userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10 },
+    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.text },
+    sectionDate: { color: Colors.textLight },
+    eventCard: {
+        backgroundColor: Colors.secondary,
+        borderRadius: 20,
+        padding: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    taskCard: {
+        backgroundColor: Colors.secondary,
+        borderRadius: 20,
+        padding: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    cardIcon: { fontSize: 24, marginRight: 15 },
+    cardTitle: { fontSize: 16, fontWeight: '500', color: Colors.text },
+    cardTime: { color: Colors.textLight, marginTop: 2 },
 });
