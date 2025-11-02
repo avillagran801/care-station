@@ -3,7 +3,7 @@ import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 { /* Solo es una maqueta, no esta conectado a nada, solo funciona el boton de "crear una nueva cuenta", para redirigir a Register */ }
 
@@ -12,16 +12,21 @@ export default function LoginScreen() {
 
     return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Image 
-          source={require('../../assets/images/logo.png')} 
-          style={styles.logo}
-        />
+      <ImageBackground 
+        source={require('../../assets/images/background2.jpg')} 
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
+        <View style={styles.container}>
+          <Image 
+            source={require('../../assets/images/logo.png')} 
+            style={styles.logo}
+          />
         <Text style={styles.title}>¡Bienvenid@!</Text>
         <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
         <View style={styles.formContainer}>
-          <StyledTextInput label="Correo electrónico" placeholder="tu@email.com" keyboardType="email-address" />
+          <StyledTextInput label="Correo electrónico" placeholder="tu@email.com" keyboardType="email-address"   />
           <StyledTextInput label="Contraseña" placeholder="********" secureTextEntry />
         </View>
 
@@ -37,17 +42,26 @@ export default function LoginScreen() {
                 onPress={() => router.push('/(auth)/register')}
             />
         </View>
-      </View>
+        </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.light.background },
+  safeArea: { 
+    flex: 1,
+    fontFamily: 'Poppins-Regular',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+  },
   container: {
     flex: 1,
     alignItems: 'center',
     padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.43)', 
   },
   logo: {
     width: 200, 
@@ -57,16 +71,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins-Bold',
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
   },
   subtitle: {
-    fontSize: 16,
-    color: Colors.textLight,
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: Colors.black,
     textAlign: 'center',
     marginBottom: 40,
+    marginTop: 1,
   },
   formContainer: {
     backgroundColor: Colors.primary,
@@ -74,6 +90,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '100%',
     marginBottom: 30,
+    fontFamily: 'Poppins-Regular',
   },
   linkText: {
     color: Colors.primary,
