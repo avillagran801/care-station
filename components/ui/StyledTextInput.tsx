@@ -25,16 +25,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    color: Colors.white,
+    color: Colors.primaryDark2,
     marginBottom: 8,
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Poppins-Medium',
   },
   input: {
     backgroundColor: Colors.white,
     borderRadius: 15,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
   },
 });

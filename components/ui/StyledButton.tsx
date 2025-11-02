@@ -28,21 +28,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    fontFamily: 'Poppins-SemiBold',
   },
   primaryButton: {
     backgroundColor: Colors.primary,
   },
   secondaryButton: {
     backgroundColor: Colors.secondary,
+    width: 210,
   },
   text: {
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Poppins-SemiBold',
   },
   primaryText: {
     color: Colors.white,
   },
   secondaryText: {
-    color: Colors.primary,
+    color: Colors.white,
+    fontSize: 12,
   },
 });
