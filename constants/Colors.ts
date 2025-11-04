@@ -26,5 +26,6 @@ export default{
     white: '#fff',
     black: '#000',
     grey: '#aaa',
-
+    iconFocused: '#6a1b9a', 
+    iconDefault: '#c7b3e0', 
 };

@@ -95,5 +95,5 @@ const styles = StyleSheet.create({
     },
     cardIcon: { fontSize: 24, marginRight: 15 },
     cardTitle: { fontSize: 16, fontWeight: '500', color: Colors.text },
-    cardTime: { color: Colors.textLight, marginTop: 2 },
+    cardTime: { color: Colors.text, marginTop: 2 },
 });
