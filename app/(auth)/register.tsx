@@ -3,36 +3,41 @@ import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-{ /* Solo es una maqueta, no esta conectado a nada, solo funciona el boton de iniciar sesion, para redirigir a login */ }
 export default function RegisterScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Image 
-            source={require('../../assets/images/logo.png')} 
-            style={styles.logo}
-        />
+      <ImageBackground 
+        source={require('../../assets/images/background2.jpg')} 
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
+        <View style={styles.container}>
+          <Image 
+              source={require('../../assets/images/logo.png')} 
+              style={styles.logo}
+          />
 
-        <View style={styles.formContainer}>
-          <StyledTextInput label="Nombre" placeholder="Ricardo Medina" />
-          <StyledTextInput label="Fecha de nacimiento" placeholder="01 May, 2002" />
-          <StyledTextInput label="Correo electrónico" placeholder="tu@email.com" keyboardType="email-address" />
-          <StyledTextInput label="Contraseña" placeholder="********" secureTextEntry />
-          <StyledTextInput label="Confirmar contraseña" placeholder="********" secureTextEntry />
-        </View>
+          <View style={styles.formContainer}>
+            <StyledTextInput label="Nombre" placeholder="Ricardo Medina" />
+            <StyledTextInput label="Fecha de nacimiento" placeholder="01 May, 2002" />
+            <StyledTextInput label="Correo electrónico" placeholder="tu@email.com" keyboardType="email-address" />
+            <StyledTextInput label="Contraseña" placeholder="********" secureTextEntry />
+            <StyledTextInput label="Confirmar contraseña" placeholder="********" secureTextEntry />
+          </View>
 
-        <StyledButton title="Registrarse" onPress={() => { /* Lógica de registro */ }} />
-        <View style={styles.loginLinkContainer}>
-          <Text style={styles.linkText}>¿Ya tienes una cuenta? </Text>
-          <Link href="/(auth)/login" asChild>
-            <Text style={styles.loginLink}>Iniciar sesión</Text>
-          </Link>
+          <StyledButton title="Registrarse" onPress={() => { /* Lógica de registro */ }} />
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.linkText}>¿Ya tienes una cuenta? </Text>
+            <Link href="/(auth)/login" asChild>
+              <Text style={styles.loginLink}>Iniciar sesión</Text>
+            </Link>
+          </View>
         </View>
-      </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -43,6 +48,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 24,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: 'rgba(255, 255, 255, 0.43)' 
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
   },
   title: {
     fontSize: 28,
@@ -64,7 +77,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   linkText: {
-    color: Colors.textLight,
+    color: Colors.text,
   },
   loginLink: {
     color: Colors.primary,

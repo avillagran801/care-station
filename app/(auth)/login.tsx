@@ -5,8 +5,6 @@ import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-{ /* Solo es una maqueta, no esta conectado a nada, solo funciona el boton de "crear una nueva cuenta", para redirigir a Register */ }
-
 export default function LoginScreen() {
     const router = useRouter();
 
@@ -35,7 +33,7 @@ export default function LoginScreen() {
            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
         
-        <View style={{ marginTop: 'auto', width: '100%', alignItems: 'center' }}>
+        <View style={{ marginTop: 'auto', width: '100%', maxWidth: 300, alignItems: 'center' }}>
             <StyledButton 
                 title="Crea una nueva cuenta" 
                 variant="secondary"
@@ -61,7 +59,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.43)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.43)',
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 420,   
   },
   logo: {
     width: 200, 
@@ -89,11 +90,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     width: '100%',
+    maxWidth: 480,
     marginBottom: 30,
     fontFamily: 'Poppins-Regular',
   },
   linkText: {
     color: Colors.primary,
+    fontWeight: 'bold',
     marginTop: 15,
   },
 });

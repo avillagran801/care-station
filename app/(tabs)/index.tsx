@@ -1,8 +1,7 @@
-import PatientCard from '@/components/home/PatientCard'; // Asegúrate que la ruta es correcta
+import PatientCard from '@/components/home/PatientCard';
 import Colors from '@/constants/Colors';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-{/* Por obvias razones dejo esto hardcodeado para tener datos que visualizar :D */}
 const eventos = [
   { id: '1', title: 'Cita con el Dr. Carmelo Breach', time: '10:00 AM - 11:00 AM', icon: '👜' },
   { id: '2', title: 'Fisioterapia', time: '2:00 PM - 3:00 PM', icon: '👤' },
@@ -17,7 +16,6 @@ const tareas = [
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Esto esta estatico, despues debemos modificarlo para que pida los datos a las API's */}
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -32,7 +30,6 @@ export default function HomeScreen() {
 
         <PatientCard />
 
-        {/* Aca podemos modificar el area de próximos eventos, tenemos que poner un onClick para que nos dirija a ese evento (lo mismo en la próxima sección) */}
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Próximos Eventos</Text>
             <Text style={styles.sectionDate}>14 Octubre 2025</Text>
@@ -47,7 +44,6 @@ export default function HomeScreen() {
             </View>
         ))}
 
-        {/* Aca podemos modificar el area de tareas pendientes */}
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Tareas Pendientes</Text>
         </View>

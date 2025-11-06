@@ -1,4 +1,3 @@
-// app/(tabs)/_layout.tsx
 import CustomTabBar from '@/components/navigation/CustomTabBar';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -25,9 +24,9 @@ export default function TabLayout() {
         listeners={{ tabPress: (e) => e.preventDefault() }}
       />
       <Tabs.Screen
-        name="documents"
+        name="contacts"
         initialParams={{ tabBarIconName: 'document-text-outline' }}
-        options={{ title: 'Documentos' }}
+        options={{ title: 'Contactos' }}
       />
       <Tabs.Screen
         name="profile"

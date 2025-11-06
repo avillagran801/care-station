@@ -1,14 +1,12 @@
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import AddButton from './AddButton';
 import TabBarBackground from './TabBarBackground';
 
 type TabItemProps = {
-  routeName: string;
   iconName: keyof typeof Ionicons.glyphMap;
   isFocused: boolean;
   onPress: () => void;
@@ -24,12 +22,9 @@ const TabItem = ({ iconName, isFocused, onPress }: TabItemProps) => (
   </TouchableOpacity>
 );
 
-
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
-  const router = useRouter();
-
   const handleAddPress = () => {
-    router.push('/modal');
+    navigation.navigate('add-task');
   };
 
   const currentRouteName = state.routes[state.index].name;
@@ -42,35 +37,31 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         <TabBarBackground />
         
         <View style={styles.tabBarItemsContainer}>
-          {/* --- CONTENEDOR IZQUIERDO --- */}
+          {/* CONTENEDOR IZQUIERDO  */}
           <View style={styles.sideContainer}>
             <TabItem
-              routeName="index"
               iconName="home-outline"
               isFocused={currentRouteName === 'index'}
               onPress={() => navigation.navigate('index')}
             />
             <TabItem
-              routeName="calendar"
               iconName="calendar-outline"
               isFocused={currentRouteName === 'calendar'}
               onPress={() => navigation.navigate('calendar')}
             />
           </View>
 
-          {/* --- ESPACIADOR CENTRAL --- */}
+          {/* ESPACIADOR CENTRAL */}
           <View style={styles.notchSpacer} />
 
-          {/* --- CONTENEDOR DERECHO  --- */}
+          {/* CONTENEDOR DERECHO */}
           <View style={styles.sideContainer}>
             <TabItem
-              routeName="documents"
               iconName="document-text-outline"
-              isFocused={currentRouteName === 'documents'}
-              onPress={() => navigation.navigate('documents')}
+              isFocused={currentRouteName === 'contacts'} 
+              onPress={() => navigation.navigate('contacts')}
             />
             <TabItem
-              routeName="profile"
               iconName="people-outline"
               isFocused={currentRouteName === 'profile'}
               onPress={() => navigation.navigate('profile')}
