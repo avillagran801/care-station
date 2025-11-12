@@ -19,7 +19,7 @@ export default function TabLayout() {
         options={{ title: 'Calendario' }}
       />
       <Tabs.Screen
-        name="add-placeholder"
+        name="addTask" //name="add-placeholder"
         options={{ title: '' }}
         listeners={{ tabPress: (e) => e.preventDefault() }}
       />

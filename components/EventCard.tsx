@@ -1,4 +1,4 @@
-import { Colors } from '@/constants/Colors';
+import Colors from '@/constants/Colors';
 import { View } from 'react-native';
 import { Card, Icon, Text } from 'react-native-paper';
 
