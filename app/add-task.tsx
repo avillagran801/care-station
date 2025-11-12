@@ -1,9 +1,10 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses', 'Todos los años'];
 
@@ -17,7 +18,7 @@ export default function AddTaskScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ScreenHeader title="Agregar tarea" />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.placeholderText}>[Formulario para Tarea, Asignado, Categoría, Descripción...]</Text>
@@ -45,13 +46,12 @@ export default function AddTaskScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.light.background },
   container: { padding: 20, flexGrow: 1 },
   placeholderText: { color: Colors.text, marginVertical: 20, textAlign: 'center' },
   repetitionButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 10, marginVertical: 20 },

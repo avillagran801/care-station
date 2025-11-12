@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddButton from './AddButton';
 import TabBarBackground from './TabBarBackground';
 
@@ -29,8 +30,10 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   const currentRouteName = state.routes[state.index].name;
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { bottom: insets.bottom }]}>
       <AddButton onPress={handleAddPress} />
       
       <View style={styles.tabBar}>
@@ -76,9 +79,9 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 20,
-        left: 20,
-        right: 20,
+        // bottom: 20,
+        left: 0,
+        right: 0,
         height: 60,
         alignItems: 'center',
     },

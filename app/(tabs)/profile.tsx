@@ -1,9 +1,10 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 
 type ProfileLinkProps = {
@@ -23,7 +24,7 @@ const ProfileLink = ({ title, icon, onPress }: ProfileLinkProps) => (
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ScreenHeader title="Perfil del Paciente" showBackButton={false} />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.placeholderText}>[Info del Paciente: Matias Medina, etc.]</Text>
@@ -33,7 +34,7 @@ export default function ProfileScreen() {
         <ProfileLink title="Exámenes Médicos" icon="document-text-outline" onPress={() => { /*  */ }} />
         <ProfileLink title="Encargados / Contactos" icon="people-outline" onPress={() => router.push('./(tabs)/contacts')} />
       </ScrollView>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 

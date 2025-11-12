@@ -1,6 +1,7 @@
 import PatientCard from '@/components/home/PatientCard';
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const eventos = [
   { id: '1', title: 'Cita con el Dr. Carmelo Breach', time: '10:00 AM - 11:00 AM', icon: '👜' },
@@ -15,7 +16,7 @@ const tareas = [
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -59,12 +60,11 @@ export default function HomeScreen() {
         ))}
 
       </ScrollView>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: Colors.light.background },
     container: { flex: 1, paddingHorizontal: 20 },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 },
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },

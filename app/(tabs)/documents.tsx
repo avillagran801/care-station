@@ -1,11 +1,14 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function DocumentsScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Pantalla de Documentos</Text>
-    </View>
+    <CustomSafeArea>
+      <View style={styles.container}>
+        <Text style={styles.title}>Pantalla de Documentos</Text>
+      </View>
+    </CustomSafeArea>
   );
 }
 

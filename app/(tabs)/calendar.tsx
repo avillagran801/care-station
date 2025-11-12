@@ -1,10 +1,9 @@
 import DailyAgendaList, { AgendaItem } from '@/components/calendar/DailyAgendaList';
 import ExpandableCalendarSelector from '@/components/calendar/ExpandableCalendarSelector';
 import ScreenHeader from '@/components/ui/ScreenHeader';
-import Colors from '@/constants/Colors';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { CalendarProvider } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,7 +30,7 @@ export default function DailyTasksScreen() {
   const [selectedDay, setSelectedDay] = React.useState(today);
   
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1}} edges={["top", "bottom"]}>
       <ScreenHeader title="Tareas Diarias" showBackButton={false} />
 
       <View style={{ flex: 1 }}>
@@ -52,8 +51,10 @@ export default function DailyTasksScreen() {
   );
 }
 
+/*
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.light.background },
   // filtersContainer: { padding: 20, gap: 15 },
   // listContainer: { paddingHorizontal: 20, gap: 15, paddingBottom: 120 },
 });
+*/
