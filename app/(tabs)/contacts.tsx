@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 export default function DocumentsScreen() {
   return (
-    <CustomSafeArea>
+    <CustomSafeArea withTabBar>
       <View style={styles.container}>
         <Text style={styles.title}>Pantalla de Documentos</Text>
       </View>

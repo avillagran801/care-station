@@ -16,7 +16,7 @@ const tareas = [
 
 export default function HomeScreen() {
   return (
-    <CustomSafeArea>
+    <CustomSafeArea withTabBar>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>

@@ -24,7 +24,7 @@ const ProfileLink = ({ title, icon, onPress }: ProfileLinkProps) => (
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <CustomSafeArea>
+    <CustomSafeArea withTabBar>
       <ScreenHeader title="Perfil del Paciente" showBackButton={false} />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.placeholderText}>[Info del Paciente: Matias Medina, etc.]</Text>

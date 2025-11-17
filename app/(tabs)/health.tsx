@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 
 export default function Tab() {
   return (
-    <CustomSafeArea>
+    <CustomSafeArea withTabBar>
       <View>
         <Text>No sé qué más poner</Text>
       </View>
