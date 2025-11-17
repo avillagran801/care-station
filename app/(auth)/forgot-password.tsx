@@ -1,15 +1,15 @@
-import Colors from '@/constants/Colors';
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function ForgotPasswordScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background }}>
+    <CustomSafeArea>
       <View style={styles.container}>
         <Text style={styles.title}>Recuperar Contraseña</Text>
         <Text>Aquí irá el formulario para recuperar la contraseña.</Text>
       </View>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 

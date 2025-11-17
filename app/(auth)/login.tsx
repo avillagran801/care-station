@@ -1,15 +1,16 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 export default function LoginScreen() {
     const router = useRouter();
 
     return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ImageBackground 
         source={require('../../assets/images/background2.jpg')} 
         resizeMode="cover"
@@ -33,7 +34,7 @@ export default function LoginScreen() {
            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
         
-        <View style={{ marginTop: 'auto', width: '100%', maxWidth: 300, alignItems: 'center' }}>
+        <View style={{ marginTop: 60, width: '100%', maxWidth: 300, alignItems: 'center' }}>
             <StyledButton 
                 title="Crea una nueva cuenta" 
                 variant="secondary"
@@ -42,15 +43,11 @@ export default function LoginScreen() {
         </View>
         </View>
       </ImageBackground>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1,
-    fontFamily: 'Poppins-Regular',
-  },
   backgroundImage: {
     flex: 1,
     width: '100%',
@@ -65,24 +62,24 @@ const styles = StyleSheet.create({
     maxWidth: 420,   
   },
   logo: {
-    width: 200, 
-    height: 200, 
+    width: 100, 
+    height: 100, 
     resizeMode: 'contain', 
     marginBottom: 0, 
   },
   title: {
-    fontSize: 32,
+    fontSize: 22,
     fontFamily: 'Poppins-Bold',
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 10,
     fontFamily: 'Poppins-Regular',
     color: Colors.black,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 10,
     marginTop: 1,
   },
   formContainer: {

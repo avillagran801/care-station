@@ -1,26 +1,22 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ImageBackground 
         source={require('../../assets/images/background2.jpg')} 
         resizeMode="cover"
         style={styles.backgroundImage}
       >
         <View style={styles.container}>
-          <Image 
-              source={require('../../assets/images/logo.png')} 
-              style={styles.logo}
-          />
-
           <View style={styles.formContainer}>
             <StyledTextInput label="Nombre" placeholder="Ricardo Medina" />
             <StyledTextInput label="Fecha de nacimiento" placeholder="01 May, 2002" />
@@ -38,12 +34,11 @@ export default function RegisterScreen() {
           </View>
         </View>
       </ImageBackground>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.light.background },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -51,7 +46,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 420,
-    backgroundColor: 'rgba(255, 255, 255, 0.43)' 
+    marginTop: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.43)', 
+    borderRadius: 20,
   },
   backgroundImage: {
     flex: 1,
@@ -69,7 +66,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     width: '100%',
-    marginTop: 0,
+    marginTop: 30,
     marginBottom: 30,
   },
   loginLinkContainer: {
@@ -84,8 +81,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logo: {
-    width: 200, 
-    height: 200, 
+    width: 100, 
+    height: 100, 
     resizeMode: 'contain', 
     marginBottom: 0, 
   },
