@@ -1,8 +1,8 @@
-import PatientCard from '@/components/home/PatientCard'; // Asegúrate que la ruta es correcta
+import PatientCard from '@/components/home/PatientCard';
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-{/* Por obvias razones dejo esto hardcodeado para tener datos que visualizar :D */}
 const eventos = [
   { id: '1', title: 'Cita con el Dr. Carmelo Breach', time: '10:00 AM - 11:00 AM', icon: '👜' },
   { id: '2', title: 'Fisioterapia', time: '2:00 PM - 3:00 PM', icon: '👤' },
@@ -16,8 +16,7 @@ const tareas = [
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Esto esta estatico, despues debemos modificarlo para que pida los datos a las API's */}
+    <CustomSafeArea withTabBar>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -32,7 +31,6 @@ export default function HomeScreen() {
 
         <PatientCard />
 
-        {/* Aca podemos modificar el area de próximos eventos, tenemos que poner un onClick para que nos dirija a ese evento (lo mismo en la próxima sección) */}
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Próximos Eventos</Text>
             <Text style={styles.sectionDate}>14 Octubre 2025</Text>
@@ -47,7 +45,6 @@ export default function HomeScreen() {
             </View>
         ))}
 
-        {/* Aca podemos modificar el area de tareas pendientes */}
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Tareas Pendientes</Text>
         </View>
@@ -63,12 +60,11 @@ export default function HomeScreen() {
         ))}
 
       </ScrollView>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: Colors.light.background },
     container: { flex: 1, paddingHorizontal: 20 },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 },
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
@@ -95,5 +91,5 @@ const styles = StyleSheet.create({
     },
     cardIcon: { fontSize: 24, marginRight: 15 },
     cardTitle: { fontSize: 16, fontWeight: '500', color: Colors.text },
-    cardTime: { color: Colors.textLight, marginTop: 2 },
+    cardTime: { color: Colors.text, marginTop: 2 },
 });

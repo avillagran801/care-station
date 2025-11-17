@@ -1,34 +1,37 @@
+import CustomTabBar from '@/components/navigation/CustomTabBar';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+        initialParams={{ tabBarIconName: 'home-outline' }}
+        options={{ title: 'Inicio' }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+        name="calendar"
+        initialParams={{ tabBarIconName: 'calendar-outline' }}
+        options={{ title: 'Calendario' }}
+      />
+      <Tabs.Screen
+        name="addTask" 
+        options={{ title: '' }}
+        listeners={{ tabPress: (e) => e.preventDefault() }}
+      />
+      <Tabs.Screen
+        name="contacts"
+        initialParams={{ tabBarIconName: 'document-text-outline' }}
+        options={{ title: 'Contactos' }}
+      />
+      <Tabs.Screen
+        name="profile"
+        initialParams={{ tabBarIconName: 'people-outline' }}
+        options={{ title: 'Perfil' }}
       />
     </Tabs>
   );
