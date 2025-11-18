@@ -1,16 +1,13 @@
 import axios from 'axios';
 import { baseURL } from '../lib/apiConfig';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
-
-
-
 
 export const authApi = {
   login: (data: { email: string; password: string }) => {
@@ -21,6 +18,7 @@ export const authApi = {
   },
 };
 
+// CHANGE LATER
 export const tasksApi = {
     getTasks: () => {
         return apiClient.get('/tasks');
