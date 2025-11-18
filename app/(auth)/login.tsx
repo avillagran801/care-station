@@ -1,16 +1,46 @@
-import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
+import { authApi } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function LoginScreen() {
     const router = useRouter();
+    
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Por favor, completa todos los campos.');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await authApi.login({ email, password });
+            
+            // Suponiendo que el backend devuelve un token al iniciar sesión
+            console.log('Login exitoso:', response.data);
+            
+            // Aquí deberías guardar el token de autenticación de forma segura
+            // Por ejemplo: await AsyncStorage.setItem('userToken', response.data.token);
+
+            router.replace('/(tabs)');
+
+        } catch (error: any) {
+            console.error('Error en el login:', error.response?.data || error.message);
+            Alert.alert('Error de inicio de sesión', error.response?.data?.message || 'No se pudo conectar con el servidor.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-    <CustomSafeArea>
+    <SafeAreaView style={styles.safeArea}>
       <ImageBackground 
         source={require('../../assets/images/background2.jpg')} 
         resizeMode="cover"
@@ -25,16 +55,33 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
         <View style={styles.formContainer}>
-          <StyledTextInput label="Correo electrónico" placeholder="tu@email.com" keyboardType="email-address"   />
-          <StyledTextInput label="Contraseña" placeholder="********" secureTextEntry />
+          <StyledTextInput 
+            label="Correo electrónico" 
+            placeholder="tu@email.com" 
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail} 
+            autoCapitalize="none"
+          />
+          <StyledTextInput 
+            label="Contraseña" 
+            placeholder="********" 
+            secureTextEntry 
+            value={password}
+            onChangeText={setPassword} 
+          />
         </View>
 
-        <StyledButton title="Iniciar sesión" onPress={() => router.replace('/(tabs)')} />
+        <StyledButton 
+            title={isLoading ? 'Iniciando...' : 'Iniciar sesión'} 
+            onPress={handleLogin} 
+            disabled={isLoading}
+        />
         <Link href="/(auth)/forgot-password" asChild>
            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
         
-        <View style={{ marginTop: 60, width: '100%', maxWidth: 300, alignItems: 'center' }}>
+        <View style={{ marginTop: 'auto', width: '100%', maxWidth: 300, alignItems: 'center' }}>
             <StyledButton 
                 title="Crea una nueva cuenta" 
                 variant="secondary"
@@ -43,11 +90,15 @@ export default function LoginScreen() {
         </View>
         </View>
       </ImageBackground>
-    </CustomSafeArea>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { 
+    flex: 1,
+    fontFamily: 'Poppins-Regular',
+  },
   backgroundImage: {
     flex: 1,
     width: '100%',
@@ -62,24 +113,24 @@ const styles = StyleSheet.create({
     maxWidth: 420,   
   },
   logo: {
-    width: 100, 
-    height: 100, 
+    width: 200, 
+    height: 200, 
     resizeMode: 'contain', 
     marginBottom: 0, 
   },
   title: {
-    fontSize: 22,
+    fontSize: 32,
     fontFamily: 'Poppins-Bold',
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: Colors.black,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 40,
     marginTop: 1,
   },
   formContainer: {

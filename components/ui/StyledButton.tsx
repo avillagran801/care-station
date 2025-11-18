@@ -7,14 +7,24 @@ type StyledButtonProps = {
   onPress: () => void;
   variant?: 'primary' | 'secondary';
   style?: ViewStyle;
+  disabled?: boolean; 
 };
 
-export default function StyledButton({ title, onPress, variant = 'primary', style }: StyledButtonProps) {
+export default function StyledButton({ title, onPress, variant = 'primary', style, disabled = false }: StyledButtonProps) { // MODIFICAR: Recibimos 'disabled'
   const buttonStyle = variant === 'primary' ? styles.primaryButton : styles.secondaryButton;
   const textStyle = variant === 'primary' ? styles.primaryText : styles.secondaryText;
 
   return (
-    <TouchableOpacity style={[styles.button, buttonStyle, style]} onPress={onPress}>
+    <TouchableOpacity 
+      style={[
+        styles.button, 
+        buttonStyle, 
+        style,
+        disabled && styles.disabledButton 
+      ]} 
+      onPress={onPress}
+      disabled={disabled} 
+    >
       <Text style={[styles.text, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
@@ -45,4 +55,7 @@ const styles = StyleSheet.create({
   secondaryText: {
     color: Colors.primary,
   },
+  disabledButton: {
+    opacity: 0.5,
+  }
 });
