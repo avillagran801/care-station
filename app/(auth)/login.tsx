@@ -48,8 +48,6 @@ export default function LoginScreen() {
         }
     };
 
-    // Colores para el degradado del botón
-    const buttonGradientColors = [Colors.primaryDark, Colors.primary] as const;
 
     return (
     <CustomSafeArea>
