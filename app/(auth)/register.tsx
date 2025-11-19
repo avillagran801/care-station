@@ -6,8 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -23,29 +22,12 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
-        Toast.show({
-            type: 'error',
-            text1: 'Campos incompletos',
-            text2: 'Por favor, llena todos los campos obligatorios.'
-        });
+        Alert.alert('Error', 'Por favor completa los campos obligatorios.');
         return;
     }
 
     if (password !== confirmPassword) {
-        Toast.show({
-            type: 'error',
-            text1: 'Error de contraseña',
-            text2: 'Las contraseñas no coinciden.'
-        });
-        return;
-    }
-
-    if (password.length < 8) {
-        Toast.show({
-            type: 'info',
-            text1: 'Contraseña débil',
-            text2: 'La contraseña debe tener al menos 8 caracteres.'
-        });
+        Alert.alert('Error', 'Las contraseñas no coinciden.');
         return;
     }
 
@@ -53,8 +35,16 @@ export default function RegisterScreen() {
 
     try {
         const nameParts = fullName.trim().split(' ');
-        let namesToSend = nameParts.length > 1 ? nameParts[0] : nameParts[0];
-        let surnamesToSend = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ".";
+        let namesToSend = '';
+        let surnamesToSend = '';
+
+        if (nameParts.length > 1) {
+            namesToSend = nameParts[0];
+            surnamesToSend = nameParts.slice(1).join(' ');
+        } else {
+            namesToSend = nameParts[0];
+            surnamesToSend = "."; 
+        }
 
         const payload = {
             names: namesToSend,
@@ -65,39 +55,38 @@ export default function RegisterScreen() {
             password_confirmation: confirmPassword,
         };
 
-        await authApi.register(payload);
-        
-        Toast.show({
-            type: 'success',
-            text1: '¡Cuenta creada!',
-            text2: 'Por favor inicia sesión con tus nuevas credenciales.',
-            visibilityTime: 4000,
-        });
+        console.log("Enviando payload:", payload);
 
-        setTimeout(() => {
+        const response = await authApi.register(payload);
+        console.log("Registro exitoso:", response.data);
+
+        const token = response.data.token || response.data.access_token;
+        
+        if (token) {
+            await onLogin(token);
+            Alert.alert('¡Bienvenido!', 'Cuenta creada exitosamente.', [
+                { text: 'Continuar', onPress: () => router.replace('/(tabs)') }
+            ]);
+        } else {
             router.replace('/(auth)/login');
-        }, 1500);
+        }
 
     } catch (error: any) {
+        console.log('--- ERROR ---');
+        console.log(error.response?.data);
+
         let message = 'Ocurrió un error al registrarse.';
         
         if (error.response?.data?.errors) {
             const errors = error.response.data.errors;
-            const firstField = Object.keys(errors)[0]; // ej: 'email'
-            const firstErrorMessage = errors[firstField][0]; // ej: 'The email has already been taken.'
-            
-            if(firstField === 'email') message = 'Este correo electrónico ya está registrado.';
-            else message = `${firstField}: ${firstErrorMessage}`;
-
+            const firstField = Object.keys(errors)[0];
+            const firstErrorMessage = errors[firstField][0];
+            message = `${firstField}: ${firstErrorMessage}`;
         } else if (error.response?.data?.message) {
             message = error.response.data.message;
         }
         
-        Toast.show({
-            type: 'error',
-            text1: 'Error de registro',
-            text2: message
-        });
+        Alert.alert('Error de registro', message);
     } finally {
         setIsLoading(false);
     }

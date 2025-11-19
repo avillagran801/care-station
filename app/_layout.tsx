@@ -1,7 +1,6 @@
 import { AuthProvider } from '@/context/AuthContext';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (
@@ -16,7 +15,6 @@ export default function RootLayout() {
             <Stack.Screen name="medications" />
             <Stack.Screen name="edit-medication" />
           </Stack>
-          <Toast /> 
         </SafeAreaProvider>
       </AuthProvider>
   );

@@ -1,14 +1,13 @@
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
+
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
-
+import { Alert, Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -20,11 +19,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Toast.show({
-                type: 'info',
-                text1: 'Faltan datos',
-                text2: 'Por favor ingresa tu correo y contraseña 👋'
-            });
+            Alert.alert('Error', 'Por favor, completa todos los campos.');
             return;
         }
 
@@ -39,36 +34,14 @@ export default function LoginScreen() {
             if (token) {
                 await onLogin(token); 
                 router.replace('/(tabs)');
+            } else {
+                Alert.alert('Error', 'No se recibió un token válido del servidor.');
             }
 
         }  catch (error: any) {
-            console.error('Error Login:', error.response?.status);
-            
-            let title = 'Error de inicio de sesión';
-            let message = 'Ocurrió un error inesperado.';
-
-            if (error.response) {
-                if (error.response.status === 401) {
-                    title = 'Credenciales incorrectas';
-                    message = 'El correo o la contraseña no coinciden.';
-                } else if (error.response.status === 422) {
-                    title = 'Datos inválidos';
-                    message = 'El formato del correo no es correcto.';
-                } else if (error.response.status === 500) {
-                    title = 'Error del Servidor';
-                    message = 'Estamos teniendo problemas técnicos.';
-                }
-            } else if (error.request) {
-                title = 'Sin conexión';
-                message = 'No pudimos conectar con el servidor.';
-            }
-
-            Toast.show({
-                type: 'error',
-                text1: title,
-                text2: message,
-                visibilityTime: 4000,
-            });
+            console.error('Error en el login:', error);
+            const message = error.response?.data?.message || 'No se pudo conectar con el servidor.';
+            Alert.alert('Error de inicio de sesión', message);
         } finally {
             setIsLoading(false);
         }
