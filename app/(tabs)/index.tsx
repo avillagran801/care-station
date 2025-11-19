@@ -1,6 +1,8 @@
 import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
+import { healthApi } from '@/services/api';
+import React, { useEffect } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const eventos = [
@@ -15,6 +17,26 @@ const tareas = [
 ];
 
 export default function HomeScreen() {
+
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      console.log('Intentando conectar con el backend...');
+      try {
+        const response = await healthApi.check();
+        console.log('✅ CONEXIÓN EXITOSA:', response.data);
+      } catch (error: any) {
+        console.error('❌ ERROR DE CONEXIÓN:', error.message);
+        // Si el error es de red, a menudo no hay `error.response`
+        if (error.response) {
+          console.error('   -> Datos del error:', error.response.data);
+          console.error('   -> Status del error:', error.response.status);
+        }
+      }
+    };
+
+    checkBackendStatus();
+  }, []); 
+
   return (
     <CustomSafeArea withTabBar>
       <ScrollView style={styles.container}>
