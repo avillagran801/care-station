@@ -1,13 +1,17 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
+
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
+import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, ImageBackground, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 export default function LoginScreen() {
     const router = useRouter();
+    const { onLogin } = useAuth();
     
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,24 +27,28 @@ export default function LoginScreen() {
         try {
             const response = await authApi.login({ email, password });
             
-            // Suponiendo que el backend devuelve un token al iniciar sesión
             console.log('Login exitoso:', response.data);
-            
-            // Aquí deberías guardar el token de autenticación de forma segura
-            // Por ejemplo: await AsyncStorage.setItem('userToken', response.data.token);
 
-            router.replace('/(tabs)');
+            const token = response.data.token || response.data.access_token;
 
-        } catch (error: any) {
-            console.error('Error en el login:', error.response?.data || error.message);
-            Alert.alert('Error de inicio de sesión', error.response?.data?.message || 'No se pudo conectar con el servidor.');
+            if (token) {
+                await onLogin(token); 
+                router.replace('/(tabs)');
+            } else {
+                Alert.alert('Error', 'No se recibió un token válido del servidor.');
+            }
+
+        }  catch (error: any) {
+            console.error('Error en el login:', error);
+            const message = error.response?.data?.message || 'No se pudo conectar con el servidor.';
+            Alert.alert('Error de inicio de sesión', message);
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-    <SafeAreaView style={styles.safeArea}>
+    <CustomSafeArea>
       <ImageBackground 
         source={require('../../assets/images/background2.jpg')} 
         resizeMode="cover"
@@ -81,7 +89,7 @@ export default function LoginScreen() {
            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
         
-        <View style={{ marginTop: 'auto', width: '100%', maxWidth: 300, alignItems: 'center' }}>
+        <View style={{ marginTop: 60, width: '100%', maxWidth: 300, alignItems: 'center' }}>
             <StyledButton 
                 title="Crea una nueva cuenta" 
                 variant="secondary"
@@ -90,7 +98,7 @@ export default function LoginScreen() {
         </View>
         </View>
       </ImageBackground>
-    </SafeAreaView>
+    </CustomSafeArea>
   );
 }
 
@@ -108,25 +116,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     backgroundColor: 'rgba(255, 255, 255, 0.43)',
+    borderRadius: 20,
     alignSelf: 'center',
     width: '100%',
-    maxWidth: 420,   
+    maxWidth: 420,
+    marginTop: 25,   
   },
   logo: {
-    width: 200, 
-    height: 200, 
+    width: 100, 
+    height: 100, 
     resizeMode: 'contain', 
     marginBottom: 0, 
   },
   title: {
-    fontSize: 32,
+    fontSize: 22,
     fontFamily: 'Poppins-Bold',
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 10,
     fontFamily: 'Poppins-Regular',
     color: Colors.black,
     textAlign: 'center',
