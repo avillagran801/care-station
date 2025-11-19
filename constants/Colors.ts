@@ -18,6 +18,7 @@ export default{
     },
     primary: 'rgba(37, 150, 190, 0.6)',
     primary2: 'rgba(153, 215, 237, 0.6)',
+    primary3: 'rgba(45, 125, 154, 0.4)',
     primaryDark: '#f4ac45',
     primaryDark2: '#065164ff',
     primaryLight: '#ede7f6',

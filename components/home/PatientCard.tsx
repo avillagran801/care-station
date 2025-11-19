@@ -17,7 +17,7 @@ export default function PatientCard() {
                 <View style={styles.progressCircle}>
                     <Text style={styles.progressText}>85%</Text>
                 </View>
-                <StyledButton title="View Task" onPress={() => {}} style={{ paddingVertical: 8, marginTop: 5, backgroundColor: Colors.accent }} />
+                <StyledButton title="View Task" onPress={() => {}} style={{ paddingVertical: 8, marginTop: 5, backgroundColor: Colors.primaryDark }} />
             </View>
         </View>
     );
@@ -25,26 +25,28 @@ export default function PatientCard() {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: Colors.primary,
+        backgroundColor: Colors.primary3,
         borderRadius: 25,
         padding: 20,
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 20,
+        
     },
-    avatar: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, borderColor: Colors.white },
+    avatar: { width: 90, height: 90, borderRadius: 35, borderWidth: 3, borderColor: Colors.white },
     info: { marginLeft: 15, flex: 1 },
-    name: { color: Colors.white, fontSize: 20, fontWeight: 'bold' },
-    age: { color: Colors.white, fontSize: 14 },
+    name: { color: Colors.white, fontSize: 25, fontWeight: 'bold',fontFamily: 'Poppins-Regular', },
+    age: { color: Colors.white, fontSize: 18, fontFamily: 'Poppins-Regular' },
     progressContainer: { alignItems: 'center' },
     progressCircle: {
         width: 60,
         height: 60,
         borderRadius: 30,
         borderWidth: 4,
-        borderColor: Colors.accent,
+        borderColor: Colors.primaryDark,
         alignItems: 'center',
         justifyContent: 'center',
+        fontFamily: 'Poppins-Regular',
     },
-    progressText: { color: Colors.white, fontWeight: 'bold' },
+    progressText: { color: Colors.white, fontWeight: 'bold', },
 });
