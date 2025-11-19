@@ -23,12 +23,14 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginBottom: 15,
+    fontFamily: 'Poppins-Regular',
   },
   label: {
-    color: Colors.white,
+    color: Colors.black,
     marginBottom: 8,
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Poppins-Medium',
   },
   input: {
     backgroundColor: Colors.white,
@@ -36,5 +38,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: 'Poppins-Regular',
   },
 });

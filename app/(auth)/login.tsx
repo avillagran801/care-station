@@ -54,7 +54,7 @@ export default function LoginScreen() {
         resizeMode="cover"
         style={styles.backgroundImage}
       >
-        <View style={styles.container}>
+        <View style={styles.formContainer}>
           <Image 
             source={require('../../assets/images/logo.png')} 
             style={styles.logo}
@@ -62,7 +62,7 @@ export default function LoginScreen() {
         <Text style={styles.title}>¡Bienvenid@!</Text>
         <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
-        <View style={styles.formContainer}>
+        <View style={styles.container}>
           <StyledTextInput 
             label="Correo electrónico" 
             placeholder="tu@email.com" 
@@ -89,13 +89,10 @@ export default function LoginScreen() {
            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
         
-        <View style={{ marginTop: 60, width: '100%', maxWidth: 300, alignItems: 'center' }}>
-            <StyledButton 
-                title="Crea una nueva cuenta" 
-                variant="secondary"
-                onPress={() => router.push('/(auth)/register')}
-            />
-        </View>
+        <Link href="/(auth)/register" asChild>
+          <Text style={styles.linkText2}>Crea una nueva cuenta</Text>
+        </Link>
+
         </View>
       </ImageBackground>
     </CustomSafeArea>
@@ -112,15 +109,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   container: {
-    flex: 1,
+    
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.43)',
     alignSelf: 'center',
-    width: '90%',
-    maxWidth: 420,
-    marginTop: 25, 
-    marginBottom: 25,
+    width: '100%',
+    height: 'auto', 
+    marginBottom: 30,
     borderRadius: 40,  
   },
   logo: {
@@ -130,14 +126,14 @@ const styles = StyleSheet.create({
     marginBottom: 0, 
   },
   title: {
-    fontSize: 22,
+    fontSize: 30,
     fontFamily: 'Poppins-Bold',
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: Colors.black,
     textAlign: 'center',
@@ -145,17 +141,31 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   formContainer: {
-    backgroundColor: Colors.primary,
     borderRadius: 20,
     padding: 20,
+    height: 'auto',
     width: '100%',
     maxWidth: 480,
-    marginBottom: 30,
+
     fontFamily: 'Poppins-Regular',
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.43)',
+    alignSelf: 'center',
+    marginTop: 20
   },
   linkText: {
+    color: Colors.grey,
+    fontWeight: 'bold',
+    marginTop: 30,
+    fontFamily: 'Poppins-Medium',
+  },
+
+  linkText2: {
     color: Colors.primary,
     fontWeight: 'bold',
-    marginTop: 15,
+    marginTop: 30,
+    fontFamily: 'Poppins-Medium',
+    fontSize: 16,
   },
 });

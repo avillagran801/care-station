@@ -40,14 +40,15 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   primaryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   secondaryButton: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.primary2,
   },
   text: {
     fontSize: 16,
-    fontWeight: 'bold',
+    
+    fontFamily: 'Poppins-Medium',
   },
   primaryText: {
     color: Colors.white,
