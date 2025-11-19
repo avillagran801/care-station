@@ -17,6 +17,7 @@ export default{
         tabIconSelected: tintColorDark,
     },
     primary: 'rgba(37, 150, 190, 0.6)',
+    primary2: 'rgba(153, 215, 237, 0.6)',
     primaryDark: '#f4ac45',
     primaryDark2: '#065164ff',
     primaryLight: '#ede7f6',
@@ -26,7 +27,7 @@ export default{
     textLight: '#a3eaffff',
     white: '#fff',
     black: '#000',
-    grey: '#aaa',
+    grey: '#717070ff',
     iconFocused: '#6a1b9a', 
     iconDefault: '#c7b3e0', 
 };

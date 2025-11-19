@@ -41,16 +41,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
   },
   primaryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   secondaryButton: {
-    backgroundColor: Colors.secondary,
-    width: 210,
+    backgroundColor: Colors.primary2,
   },
   text: {
     fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Poppins-SemiBold',
+    
+    fontFamily: 'Poppins-Medium',
   },
   primaryText: {
     color: Colors.white,

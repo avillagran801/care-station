@@ -2,8 +2,9 @@ import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
 import { healthApi } from '@/services/api';
-import React, { useEffect } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
 
 const eventos = [
   { id: '1', title: 'Cita con el Dr. Carmelo Breach', time: '10:00 AM - 11:00 AM', icon: '👜' },
@@ -16,7 +17,12 @@ const tareas = [
   { id: '3', title: 'Comprar Medicamentos', subtitle: '2 Tareas asociadas', icon: '📖' },
 ];
 
+
+
 export default function HomeScreen() {
+
+  const [name, setName] = useState('Ana Banana');
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     const checkBackendStatus = async () => {
@@ -44,8 +50,21 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image source={require('../../assets/images/avatar.png')} style={styles.userAvatar} />
             <View>
-              <Text style={styles.greeting}>¡Hola!</Text>
-              <Text style={styles.userName}>Ana Banana</Text>
+              {editing?(
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  onBlur={() => setEditing(false)}
+                  style={styles.userNameInput}
+                  autoFocus
+                  returnKeyType="done"
+                  ></TextInput>
+              ):(
+                <Pressable onPress={() => setEditing(true)}>
+                  <Text style={styles.greeting}>¡Hola!</Text>
+                  <Text style={styles.userName}>{name}</Text>
+                </Pressable>
+              )}
             </View>
           </View>
           <Text style={{ fontSize: 24 }}>🔔</Text>
@@ -86,12 +105,21 @@ export default function HomeScreen() {
   );
 }
 
+// ...existing code...
 const styles = StyleSheet.create({
     container: { flex: 1, paddingHorizontal: 20 },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 },
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
-    greeting: { fontSize: 16, color: Colors.textLight },
+    greeting: { fontSize: 16, color: Colors.black },
     userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
+    userNameInput: {
+      fontSize: 20,
+      color: Colors.text,
+      fontWeight: '700',
+      paddingVertical: 4,
+      minWidth: 140,
+      fontFamily: 'Poppins-SemiBold',
+    },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10 },
     sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.text },
     sectionDate: { color: Colors.textLight },

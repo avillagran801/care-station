@@ -23,9 +23,10 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginBottom: 15,
+    fontFamily: 'Poppins-Regular',
   },
   label: {
-    color: Colors.primaryDark2,
+    color: Colors.black,
     marginBottom: 8,
     fontSize: 14,
     fontWeight: '500',
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    fontSize: 14,
-    fontFamily: 'Poppins-Medium',
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
   },
 });
