@@ -41,7 +41,7 @@ export default function DailyTasksScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.pageHeader}>
             <Text style={styles.pageTitle}>Tareas Diarias</Text>
-            <Text style={styles.pageSubtitle}>Resumen y actividades programadas</Text>
+            <Text style={styles.pageSubtitle}>Resumen y Actividades Programadas</Text>
           </View>
 
           <View style={styles.card}>
@@ -82,20 +82,22 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   pageHeader: {
-    marginTop: 8,
+    marginTop: 18,
     marginBottom: 12,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   pageTitle: {
     color: Colors.white,
-    fontSize: 28,
+    fontSize: 35,
     fontFamily: 'Poppins-SemiBold',
-    marginBottom: 4,
+   
+    
   },
   pageSubtitle: {
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 14,
+    fontSize: 20,
     fontFamily: 'Poppins-Regular',
+    marginBottom: 15,
   },
   card: {
     backgroundColor: 'rgba(255,255,255,0.85)',

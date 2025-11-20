@@ -152,6 +152,24 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular' 
     },
     cardIcon: { fontSize: 24, marginRight: 15 },
-    cardTitle: { fontSize: 16, fontWeight: '500', color: Colors.text },
-    cardTime: { color: Colors.text, marginTop: 2 },
+    cardTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: Colors.text,
+    fontFamily: 'Poppins-SemiBold', // <- aplica Poppins semi-bold
+    },
+    cardTime: {
+      color: Colors.text,
+      marginTop: 2,
+      fontFamily: 'Poppins-Regular', // <- aplica Poppins regular
+      fontSize: 15,
+      opacity: 0.9,
+    },
+    cardSubtitle: {
+      color: Colors.text,
+      marginTop: 4,
+      fontFamily: 'Poppins-Regular', // <- aplica Poppins regular
+      fontSize: 13,
+      opacity: 0.9,
+    },
 });
