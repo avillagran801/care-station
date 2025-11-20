@@ -80,11 +80,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingBottom: 120,
+    fontFamily: 'Poppins-Regular',
   },
   pageHeader: {
     marginTop: 18,
     marginBottom: 12,
     alignItems: 'center',
+    fontFamily: 'Poppins-Regular',
   },
   pageTitle: {
     color: Colors.white,
