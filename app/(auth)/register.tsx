@@ -112,7 +112,7 @@ export default function RegisterScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
-            <Text style={styles.title}>Crear Cuenta</Text>
+            <Text style={styles.title}>Registro</Text>
             
             <View style={styles.formContainer}>
                 <StyledTextInput 
@@ -154,11 +154,13 @@ export default function RegisterScreen() {
                 />
             </View>
 
-            <StyledButton 
-                title={isLoading ? "Registrando..." : "Registrarse"} 
-                onPress={handleRegister} 
-                disabled={isLoading}
-            />
+            <View style={{ marginTop: 15, width: '100%' }}>
+              <StyledButton 
+                  title={isLoading ? "Registrando..." : "Registrarse"} 
+                  onPress={handleRegister} 
+                  disabled={isLoading}
+              />
+            </View>
             
             <View style={styles.loginLinkContainer}>
                 <Text style={styles.linkText}>¿Ya tienes una cuenta? </Text>
@@ -193,19 +195,25 @@ const styles = StyleSheet.create({
     marginVertical: 20
   },
   title: {
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    color: Colors.primaryDark, 
-    textAlign: 'center', 
-    marginVertical: 10 
+    fontSize: 30,
+    fontFamily: 'Poppins-Bold',
+    color: Colors.primaryDark,
+    textAlign: 'center',
+    marginTop: 0,
   },
   formContainer: { 
-    backgroundColor: Colors.primary, 
-    borderRadius: 20, 
-    padding: 20, 
-    width: '100%', 
-    marginTop: 20, 
-    marginBottom: 30 
+    borderRadius: 20,
+    padding: 20,
+    height: 'auto',
+    width: '100%',
+    maxWidth: 480,
+
+    fontFamily: 'Poppins-Regular',
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.43)',
+    alignSelf: 'center',
+    marginTop: 20 
   },
   
   label: {
@@ -225,14 +233,18 @@ const styles = StyleSheet.create({
   
   loginLinkContainer: { 
     flexDirection: 'row', 
-    marginTop: 10 
+    marginTop: 10, 
+    fontFamily: 'Poppins-Regular',
   },
   linkText: { 
-    color: Colors.text 
+    color: Colors.text,
+    fontFamily: 'Poppins-Regular'
+    
   },
   loginLink: { 
     color: Colors.primary, 
-    fontWeight: 'bold' 
+    fontWeight: 'bold', 
+    fontFamily: 'Poppins-Medium'
   },
   webDateInputContainer: {
     backgroundColor: Colors.white,

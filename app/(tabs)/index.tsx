@@ -3,7 +3,7 @@ import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
 import { healthApi } from '@/services/api';
 import React, { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 
 const eventos = [
@@ -44,6 +44,11 @@ export default function HomeScreen() {
 
   return (
     <CustomSafeArea withTabBar>
+      <ImageBackground
+        source={require('../../assets/images/background2.jpg')}
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -100,17 +105,22 @@ export default function HomeScreen() {
         ))}
 
       </ScrollView>
+      </ImageBackground>
     </CustomSafeArea>
   );
 }
 
 // ...existing code...
 const styles = StyleSheet.create({
-    container: { flex: 1, paddingHorizontal: 20 },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 },
+    backgroundImage: {
+      flex: 1,
+      width: '100%',
+    },
+    container: { flex: 1, paddingHorizontal: 20, fontFamily: 'Poppins-Regular' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20,  fontFamily: 'Poppins-Regular'  },
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
-    greeting: { fontSize: 16, color: Colors.black },
-    userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
+    greeting: { fontSize: 16, color: Colors.black, fontFamily: 'Poppins-SemiBold' },
+    userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text,  fontFamily: 'Poppins-Regular'  },
     userNameInput: {
       fontSize: 20,
       color: Colors.text,
@@ -119,26 +129,46 @@ const styles = StyleSheet.create({
       minWidth: 140,
       fontFamily: 'Poppins-SemiBold',
     },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10 },
-    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.text },
-    sectionDate: { color: Colors.textLight },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10,  fontFamily: 'Poppins-Regular'  },
+    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.primaryDark2, fontFamily: 'Poppins-Regular'  },
+    sectionDate: { color: Colors.primaryDark2, fontFamily: 'Poppins-Regular', fontSize: 18 },
     eventCard: {
-        backgroundColor: Colors.secondary,
+        backgroundColor: 'rgba(255, 255, 255, 0.43)',
         borderRadius: 20,
         padding: 20,
         flexDirection: 'row',
         alignItems: 'center',
+        fontFamily: 'Poppins-Regular' ,
         marginBottom: 10,
     },
     taskCard: {
-        backgroundColor: Colors.secondary,
+        backgroundColor: 'rgba(255, 255, 255, 0.43)',
         borderRadius: 20,
         padding: 20,
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
+        fontFamily: 'Poppins-Regular' 
     },
     cardIcon: { fontSize: 24, marginRight: 15 },
-    cardTitle: { fontSize: 16, fontWeight: '500', color: Colors.text },
-    cardTime: { color: Colors.text, marginTop: 2 },
+    cardTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: Colors.text,
+    fontFamily: 'Poppins-SemiBold', // <- aplica Poppins semi-bold
+    },
+    cardTime: {
+      color: Colors.text,
+      marginTop: 2,
+      fontFamily: 'Poppins-Regular', // <- aplica Poppins regular
+      fontSize: 15,
+      opacity: 0.9,
+    },
+    cardSubtitle: {
+      color: Colors.text,
+      marginTop: 4,
+      fontFamily: 'Poppins-Regular', // <- aplica Poppins regular
+      fontSize: 13,
+      opacity: 0.9,
+    },
 });

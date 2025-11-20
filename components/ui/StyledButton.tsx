@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    fontFamily: 'Poppins-SemiBold',
   },
   primaryButton: {
     backgroundColor: Colors.primaryDark,
@@ -54,7 +55,8 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   secondaryText: {
-    color: Colors.primary,
+    color: Colors.white,
+    fontSize: 12,
   },
   disabledButton: {
     opacity: 0.5,

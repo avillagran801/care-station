@@ -1,3 +1,4 @@
+// ...existing code...
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
@@ -71,6 +72,7 @@ export default function LoginScreen() {
         }
     };
 
+
     return (
     <CustomSafeArea>
       <ImageBackground 
@@ -83,8 +85,8 @@ export default function LoginScreen() {
             source={require('../../assets/images/logo.png')} 
             style={styles.logo}
           />
-        <Text style={styles.title}>¡Bienvenid@!</Text>
-        <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+          <Text style={styles.title}>¡Bienvenid@!</Text>
+          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
         <View style={styles.container}>
           <StyledTextInput 
@@ -148,6 +150,11 @@ const styles = StyleSheet.create({
     height: 100, 
     resizeMode: 'contain', 
     marginBottom: 0, 
+  },
+  card: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 16,
   },
   title: {
     fontSize: 30,
