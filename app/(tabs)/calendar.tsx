@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   pageSubtitle: {
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 20,
+    fontSize: 15,
     fontFamily: 'Poppins-Regular',
     marginBottom: 15,
   },
