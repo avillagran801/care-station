@@ -35,7 +35,7 @@ export default function LoginScreen() {
 
             if (token) {
                 await onLogin(token);
-                router.replace('/(tabs)');
+                router.replace('/select-group');
             } 
 
         } catch (error: any) {

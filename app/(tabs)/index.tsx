@@ -32,7 +32,6 @@ export default function HomeScreen() {
         console.log('✅ CONEXIÓN EXITOSA:', response.data);
       } catch (error: any) {
         console.error('❌ ERROR DE CONEXIÓN:', error.message);
-        // Si el error es de red, a menudo no hay `error.response`
         if (error.response) {
           console.error('   -> Datos del error:', error.response.data);
           console.error('   -> Status del error:', error.response.status);

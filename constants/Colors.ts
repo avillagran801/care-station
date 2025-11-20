@@ -23,7 +23,7 @@ export default{
     secondary: '#e1e0ff', 
     accent: '#536dfe', 
     text: '#333',
-    textLight: '#a3eaffff',
+    textLight: '#346371ff',
     white: '#fff',
     black: '#000',
     grey: '#717070ff',
