@@ -25,7 +25,7 @@ export default{
     secondary: '#5e909cc4', 
     accent: '#536dfe', 
     text: '#333',
-    textLight: '#a3eaffff',
+    textLight: '#346371ff',
     white: '#fff',
     black: '#000',
     grey: '#717070ff',
