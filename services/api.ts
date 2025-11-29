@@ -61,6 +61,20 @@ export const groupsApi = {
     getMyGroups: () => {
         return apiClient.get('/my-groups');
     },
+    // AÑADIDOS DE AQUÍ A ABAJO, NO SE SI ESTÁ BIEN
+    createGroup: (data: any) => {
+        return apiClient.post('/my-groups', data);
+    },
+    findGroup: (data: {code: string}) => {
+      return ;
+    },
+}
+
+// AÑADIDO, NO SE SI ESTÁ BIEN
+export const patientApi = {
+  registerPatient: (data: any) => { 
+    return apiClient.post('/patient', data);
+  },
 }
 
 export const tasksApi = {

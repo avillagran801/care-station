@@ -87,7 +87,7 @@ export default function SelectGroupScreen() {
       <Image 
         source={{ uri: item.photoUrl }} 
         style={styles.cardImage} 
-        defaultSource={require('../assets/images/avatar.png')} // Imagen por defecto si falla la URL
+        defaultSource={require('../../assets/images/avatar.png')} // Imagen por defecto si falla la URL
       />
       
       <View style={styles.cardContent}>
@@ -112,7 +112,7 @@ export default function SelectGroupScreen() {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setIsUserMenuVisible(true)} style={styles.avatarContainer}>
             <Image 
-                source={require('../assets/images/avatar.png')} // Podrías usar authState.user.photoUrl si lo tienes
+                source={require('../../assets/images/avatar.png')} // Podrías usar authState.user.photoUrl si lo tienes
                 style={styles.userAvatar} 
             />
             <View style={styles.badge} /> 
@@ -145,10 +145,21 @@ export default function SelectGroupScreen() {
             />
         )}
 
-        <View style={styles.footer}>
+        <View style={styles.footer1}>
+            <StyledButton 
+                title="Unirse a nuevo grupo" 
+                onPress={() => router.replace('/find-group')}
+                //onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Unirse a grupo en construcción' })}
+                variant="secondary"
+                style={{ borderWidth: 1, borderColor: Colors.primary }}
+            />
+        </View>
+
+        <View style={styles.footer2}>
             <StyledButton 
                 title="Crear nuevo grupo" 
-                onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Crear grupo en construcción' })}
+                onPress={() => router.replace('/create-group')}
+                //onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Crear grupo en construcción' })}
                 variant="secondary"
                 style={{ borderWidth: 1, borderColor: Colors.primary }}
             />
@@ -189,5 +200,6 @@ const styles = StyleSheet.create({
     patientName: { fontSize: 16, fontWeight: 'bold', color: Colors.text || '#000' },
     memberCount: { fontSize: 12, color: Colors.textLight || '#666', marginTop: 2 },
     optionsButton: { padding: 10 },
-    footer: { position: 'absolute', bottom: 20, left: 20, right: 20 }
+    footer1: { position: 'absolute', bottom: 0, left: 20, right: 20 },
+    footer2: { position: 'absolute', bottom: 70, left: 20, right: 20 }
 });
