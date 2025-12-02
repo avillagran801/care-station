@@ -73,4 +73,28 @@ export const healthApi = {
   check: () => apiClient.get('/health'),
 };
 
+export const careGroupApi = {
+  create: (data: { name: string; photo_url?: string | null }) => {
+    return apiClient.post('/care-groups', data);
+  },
+
+  getMyGroups: () => {
+    return apiClient.get('/my-groups');
+  },
+};
+
+export const patientsApi = {
+  create: (data: {
+    care_group_id: number;
+    names: string;
+    surnames?: string | null;
+    cellphone?: string | null;
+    telephone?: string | null;
+    address?: string | null;
+  }) => {
+    return apiClient.post('/patients', data);
+  },
+};
+
+
 export default apiClient;

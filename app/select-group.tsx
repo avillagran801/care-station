@@ -148,7 +148,7 @@ export default function SelectGroupScreen() {
         <View style={styles.footer}>
             <StyledButton 
                 title="Crear nuevo grupo" 
-                onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Crear grupo en construcción' })}
+                onPress={() => router.push('/create-group')}
                 variant="secondary"
                 style={{ borderWidth: 1, borderColor: Colors.primary }}
             />
