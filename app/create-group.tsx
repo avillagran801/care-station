@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+
 export default function CreateGroupScreen() {
   const router = useRouter();
 
@@ -38,12 +39,13 @@ export default function CreateGroupScreen() {
     try {
       // CREAR GRUPO
       const groupResponse = await careGroupApi.create({
-        name: groupName,
+        group_name: groupName,
         photo_url: null,
+        patient_names: patientNames,
       });
 
-      const care_group_id = groupResponse.data.care_group_id;
-
+      const care_group_id = groupResponse.data?.group?.care_group_id ?? groupResponse.data?.care_group_id;
+      
       // CREAR PACIENTE ASOCIADO
       await patientsApi.create({
         care_group_id,
@@ -63,6 +65,7 @@ export default function CreateGroupScreen() {
       router.replace('/(tabs)');
 
     } catch (error: any) {
+        console.log(error);
       let message = 'Error al crear el grupo.';
 
       if (error.response?.data?.errors) {

@@ -3,7 +3,7 @@ import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
-import { groupsApi } from '@/services/api'; // <--- Importar API
+import { careGroupApi, groupsApi } from '@/services/api'; // <--- Importar API
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -73,6 +73,29 @@ export default function SelectGroupScreen() {
     setIsGroupMenuVisible(true);
   };
 
+  const handleCreateGroup = async () => {
+  try {
+    await careGroupApi.create({
+      group_name: 'Grupo de prueba',
+      photo_url: null,
+
+      patient_names: 'Juan',
+      patient_surnames: 'Pérez',
+      patient_cellphone: '912345678',
+      patient_telephone: null,
+      patient_address: 'Santiago',
+    });
+
+    Toast.show({ type: 'success', text1: 'Grupo creado' });
+    loadGroups();
+
+  } catch (error) {
+    console.error(error);
+    Toast.show({ type: 'error', text1: 'Error al crear grupo' });
+  }
+};
+
+
   const userMenuOptions: ActionOption[] = [
     { label: 'Cerrar Sesión', icon: 'log-out-outline', isDestructive: true, onPress: handleLogout },
   ];
@@ -87,7 +110,7 @@ export default function SelectGroupScreen() {
       <Image 
         source={{ uri: item.photoUrl }} 
         style={styles.cardImage} 
-        defaultSource={require('../assets/images/avatar.png')} // Imagen por defecto si falla la URL
+        defaultSource={require('../assets/images/avatar.png')} 
       />
       
       <View style={styles.cardContent}>
@@ -112,7 +135,7 @@ export default function SelectGroupScreen() {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setIsUserMenuVisible(true)} style={styles.avatarContainer}>
             <Image 
-                source={require('../assets/images/avatar.png')} // Podrías usar authState.user.photoUrl si lo tienes
+                source={require('../assets/images/avatar.png')}
                 style={styles.userAvatar} 
             />
             <View style={styles.badge} /> 
@@ -146,12 +169,11 @@ export default function SelectGroupScreen() {
         )}
 
         <View style={styles.footer}>
-            <StyledButton 
-                title="Crear nuevo grupo" 
-                onPress={() => router.push('/create-group')}
-                variant="secondary"
-                style={{ borderWidth: 1, borderColor: Colors.primary }}
-            />
+          <StyledButton 
+            title="Crear nuevo grupo" 
+            onPress={handleCreateGroup}
+            variant="secondary"
+          />
         </View>
 
         <ActionSheetModal
