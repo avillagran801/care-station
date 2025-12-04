@@ -171,7 +171,7 @@ export default function SelectGroupScreen() {
         <View style={styles.footer1}>
             <StyledButton 
                 title="Unirse a nuevo grupo" 
-                onPress={() => router.replace('/find-group')}
+                onPress={() => router.replace('/find-group' as any)}
                 //onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Unirse a grupo en construcción' })}
                 variant="secondary"
                 style={{ borderWidth: 1, borderColor: Colors.primary }}
