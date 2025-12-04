@@ -4,7 +4,7 @@ import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
-import { authApi } from '@/services/api';
+import { groupsApi } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
@@ -17,61 +17,30 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [familyCode, setFamilyCode] = useState('');
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            Toast.show({
-                type: 'info',
-                text1: 'Faltan datos',
-                text2: 'Por favor ingresa tu correo y contraseña 👋'
-            });
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            const response = await authApi.login({ email, password });
-            
-            const token = response.data.token || response.data.access_token;
-
-            if (token) {
-                await onLogin(token);
-                router.replace('/(group)/select-group');
-            } 
-
-        } catch (error: any) {
-            console.error('Error Login:', error.response?.status);
-            
-            let title = 'Error de inicio de sesión';
-            let message = 'Ocurrió un error inesperado.';
-
-            if (error.response) {
-                if (error.response.status === 401) {
-                    title = 'Credenciales incorrectas';
-                    message = 'El correo o la contraseña no coinciden.';
-                } else if (error.response.status === 422) {
-                    title = 'Datos inválidos';
-                    message = 'El formato del correo no es correcto.';
-                } else if (error.response.status === 500) {
-                    title = 'Error del Servidor';
-                    message = 'Estamos teniendo problemas técnicos.';
-                }
-            } else if (error.request) {
-                title = 'Sin conexión';
-                message = 'No pudimos conectar con el servidor.';
-            }
-
-            Toast.show({
-                type: 'error',
-                text1: title,
-                text2: message,
-                visibilityTime: 4000,
-            });
-        } finally {
-            setIsLoading(false);
-        }
+    const findFamiliarGroup = async () => {
+      setIsLoading(true);
+      try {
+        const response = await groupsApi.findGroup({ code: familyCode });
+        // Aquí puedes manejar la respuesta, por ejemplo, navegar al grupo encontrado
+        Toast.show({
+          type: 'success',
+          text1: 'Grupo encontrado',
+          text2: 'Has sido añadido al grupo familiar exitosamente.'
+        });
+        router.replace('/select-group');
+      } catch (error) {
+        console.error('Error finding family group:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'No se pudo encontrar el grupo familiar. Verifica el código e intenta de nuevo.'
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
-
 
     return (
     <CustomSafeArea>
@@ -85,38 +54,27 @@ export default function LoginScreen() {
             source={require('../../assets/images/logo.png')} 
             style={styles.logo}
           />
-          <Text style={styles.title}>¡Bienvenid@!</Text>
-          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+          <Text style={styles.title}>Invitación al grupo familiar</Text>
 
         <View style={styles.container}>
           <StyledTextInput 
-            label="Correo electrónico" 
-            placeholder="tu@email.com" 
+            label="Ingrese el código de invitación para unirte a tu grupo familiar" 
+            placeholder="------" 
             keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail} 
+            value={familyCode}
+            onChangeText={setFamilyCode} 
             autoCapitalize="none"
-          />
-          <StyledTextInput 
-            label="Contraseña" 
-            placeholder="********" 
-            secureTextEntry 
-            value={password}
-            onChangeText={setPassword} 
           />
         </View>
 
         <StyledButton 
-            title={isLoading ? 'Iniciando...' : 'Iniciar sesión'} 
-            onPress={handleLogin} 
+            title={isLoading ? 'Buscando...' : 'Buscar grupo familiar'} 
+            onPress={findFamiliarGroup} 
             disabled={isLoading}
         />
-        <Link href="/(auth)/forgot-password" asChild>
-           <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
-        </Link>
         
-        <Link href="/(auth)/register" asChild>
-          <Text style={styles.linkText2}>Crea una nueva cuenta</Text>
+        <Link href="/select-group" asChild>
+        <Text style={styles.linkText2}>Volver atras</Text>
         </Link>
 
         </View>
@@ -133,14 +91,16 @@ const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
     width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
   },
   container: {
-    
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.43)',
     alignSelf: 'center',
-    width: '100%',
+    width: '90%',
     height: 'auto', 
     marginBottom: 30,
     borderRadius: 40,  
@@ -162,6 +122,7 @@ const styles = StyleSheet.create({
     color: Colors.primaryDark,
     textAlign: 'center',
     marginTop: 0,
+    marginBottom: 20,
   },
   subtitle: {
     fontSize: 14,
@@ -175,15 +136,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     height: 'auto',
-    width: '100%',
+    width: '90%',
     maxWidth: 480,
 
     fontFamily: 'Poppins-Regular',
-    flex: 1,
+    //flex: 1,
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.43)',
     alignSelf: 'center',
-    marginTop: 20
+    marginTop: 0,
+    marginBottom: 0,
   },
   linkText: {
     color: Colors.grey,
