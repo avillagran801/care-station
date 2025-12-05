@@ -57,10 +57,6 @@ export const authApi = {
   },
 };
 
-export const userApi =  {
-  me: () => apiClient.get('/user'),
-};
-
 export const groupsApi = {
     getMyGroups: () => {
         return apiClient.get('/my-groups');
@@ -76,10 +72,83 @@ export const groupsApi = {
 
 // AÑADIDO, NO SE SI ESTÁ BIEN
 export const patientApi = {
-  getAll: () => apiClient.get('/patients'),
+  registerPatient: (data: any) => { 
+    return apiClient.post('/patient', data);
+  },
+}
 
-  getOne: (id: number) => apiClient.get(`/patients/${id}`),
+export const tasksApi = {
+  // GET /tasks/by-group/{care_group_id}
+  listByGroup: (care_group_id: number) => {
+      return apiClient.get(`/tasks/by-group/${care_group_id}`);
+  },
 
+  // GET /tasks/upcoming-by-group/{care_group_id}
+  listUpcomingByGroup: (care_group_id: number) => {
+      return apiClient.get(`/tasks/upcoming-by-group/${care_group_id}`);
+  },
+
+  // POST /tasks
+  create: (data: {
+    care_group_id: number;
+    title: string;
+    description?: string | null;
+    frequency: string;
+    category?: string | null;
+    begin_time: string;
+    end_time?: string | null;
+  }) => {
+    return apiClient.post('/tasks', data);
+  },
+
+  // GET /tasks/{id}
+  read: (id: number) => {
+    return apiClient.get(`/tasks/${id}`);
+  },
+
+  // PUT /tasks/{id}
+  update: (id: number, data: {
+    care_group_id: number;
+    title: string;
+    description?: string | null;
+    frequency: string;
+    category?: string | null;
+    begin_time: string;
+    end_time?: string | null;
+  }) => {
+    return apiClient.put(`/tasks/${id}`, data);
+  },
+
+  // DELETE /tasks/{id}
+  delete: (id: number) => {
+    return apiClient.delete(`/tasks/${id}`);
+  }
+}
+
+export const healthApi = {
+  check: () => apiClient.get('/health'),
+};
+
+export const careGroupApi = {
+  create: (data: {
+    group_name: string;
+    photo_url?: string | null;
+    patient_names: string;
+    patient_surnames?: string | null;
+    patient_cellphone?: string | null;
+    patient_telephone?: string | null;
+    patient_address?: string | null;
+  }) => {
+    return apiClient.post('/care-groups', data);
+  },
+
+  getMyGroups: () => {
+    return apiClient.get('/my-groups');
+  },
+};
+
+
+export const patientsApi = {
   create: (data: {
     care_group_id: number;
     names: string;
@@ -90,16 +159,6 @@ export const patientApi = {
   }) => {
     return apiClient.post('/patients', data);
   },
-};
-
-export const tasksApi = {
-    getTasks: () => {
-        return apiClient.get('/tasks');
-    },
-}
-
-export const healthApi = {
-  check: () => apiClient.get('/health'),
 };
 
 
