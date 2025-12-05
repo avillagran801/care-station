@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { baseURL } from '../lib/apiConfig';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
