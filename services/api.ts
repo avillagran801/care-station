@@ -57,6 +57,10 @@ export const authApi = {
   },
 };
 
+export const userApi =  {
+  me: () => apiClient.get('/user'),
+};
+
 export const groupsApi = {
     getMyGroups: () => {
         return apiClient.get('/my-groups');
@@ -72,41 +76,10 @@ export const groupsApi = {
 
 // AÑADIDO, NO SE SI ESTÁ BIEN
 export const patientApi = {
-  registerPatient: (data: any) => { 
-    return apiClient.post('/patient', data);
-  },
-}
+  getAll: () => apiClient.get('/patients'),
 
-export const tasksApi = {
-    getTasks: () => {
-        return apiClient.get('/tasks');
-    },
-}
+  getOne: (id: number) => apiClient.get(`/patients/${id}`),
 
-export const healthApi = {
-  check: () => apiClient.get('/health'),
-};
-
-export const careGroupApi = {
-  create: (data: {
-    group_name: string;
-    photo_url?: string | null;
-    patient_names: string;
-    patient_surnames?: string | null;
-    patient_cellphone?: string | null;
-    patient_telephone?: string | null;
-    patient_address?: string | null;
-  }) => {
-    return apiClient.post('/care-groups', data);
-  },
-
-  getMyGroups: () => {
-    return apiClient.get('/my-groups');
-  },
-};
-
-
-export const patientsApi = {
   create: (data: {
     care_group_id: number;
     names: string;
@@ -117,6 +90,16 @@ export const patientsApi = {
   }) => {
     return apiClient.post('/patients', data);
   },
+};
+
+export const tasksApi = {
+    getTasks: () => {
+        return apiClient.get('/tasks');
+    },
+}
+
+export const healthApi = {
+  check: () => apiClient.get('/health'),
 };
 
 
