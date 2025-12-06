@@ -7,9 +7,11 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 type ScreenHeaderProps = {
   title: string;
   showBackButton?: boolean;
+  has_add?: boolean;
+  actual_link?: string;
 };
 
-export default function ScreenHeader({ title, showBackButton = true }: ScreenHeaderProps) {
+export default function ScreenHeader({ title, showBackButton = true, has_add = false, actual_link = ""}: ScreenHeaderProps) {
   const router = useRouter();
 
   return (
@@ -25,10 +27,22 @@ export default function ScreenHeader({ title, showBackButton = true }: ScreenHea
       
       <Text style={styles.title}>{title}</Text>
 
-      
-      <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="notifications-outline" size={24} color={Colors.text} />
-      </TouchableOpacity>
+      <>
+      {has_add && actual_link != ""?
+        <>
+        <TouchableOpacity style={styles.iconButton_1}>
+          <Ionicons name="add" size={24} color={Colors.text} onPress={()=>router.push(`/add-${actual_link}` as any)}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton_2}>
+          <Ionicons name="notifications-outline" size={24} color={Colors.text} />
+        </TouchableOpacity>
+        </>
+        :
+        <TouchableOpacity style={styles.iconButton}>
+          <Ionicons name="notifications-outline" size={24} color={Colors.text} />
+        </TouchableOpacity>
+      }
+      </>
     </View>
   );
 }
@@ -50,6 +64,20 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 40,
     height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+    iconButton_1: {
+    width: 40,
+    height: 40,
+    marginRight: -180,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+    iconButton_2: {
+    width: 40,
+    height: 40,
+    marginLeft: -180,
     justifyContent: 'center',
     alignItems: 'center',
   },
