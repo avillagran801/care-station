@@ -2,15 +2,23 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useEditItem } from '@/context/EditContext';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 
 export default function EditMedicationScreen() {
-  const { id } = useLocalSearchParams(); 
   const router = useRouter();
+  const { selectedItem } = useEditItem();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (selectedItem) {
+      setName(selectedItem.name || '');
+      setDescription(selectedItem.description || '');
+    }
+  }, [selectedItem]);
 
   const edit_medication = () => {
   
@@ -28,7 +36,7 @@ export default function EditMedicationScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader title="Editar Medicamento" />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text>Editando medicamento con ID: {id}</Text>
+        <Text>Editando medicamento con ID: {selectedItem?.id}</Text>
         <Text style={styles.placeholderText}>
             <StyledTextInput 
               label="Nombre de la medicina" 
@@ -40,7 +48,6 @@ export default function EditMedicationScreen() {
             <StyledTextInput 
               label="Descripción" 
               placeholder="Cada cuanto y que tanto debe tomar" 
-              secureTextEntry 
               value={description}
               onChangeText={setDescription} 
               autoCapitalize="none"

@@ -1,9 +1,11 @@
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import Colors from '@/constants/Colors';
+import { useEditItem } from '@/context/EditContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const mockMedications = [
   { id: 'med1', name: 'Metformina', description: 'Todos los dias 8:00 AM - 12:00PM' },
   { id: 'med2', name: 'Losartán', description: 'Todos los dias 10:00 AM' },
@@ -11,6 +13,13 @@ const mockMedications = [
 
 export default function MedicationsScreen() {
   const router = useRouter();
+  const { setSelectedItem } = useEditItem();
+
+  const handleEditMedication = (med: any) => {
+    setSelectedItem(med);
+    router.push(`./edit-medication?id=${med.id}`);
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader title="Medicamentos"  has_add={true} actual_link="medication" />
@@ -21,7 +30,7 @@ export default function MedicationsScreen() {
               <Text style={styles.medName}>{med.name}</Text>
               <Text style={styles.medDescription}>{med.description}</Text>
             </View>
-            <TouchableOpacity onPress={() => router.push(`./edit-medication?id=${med.id}`)}>
+            <TouchableOpacity onPress={() => handleEditMedication(med)}>
               <Ionicons name="create-outline" size={24} color={Colors.primary} />
             </TouchableOpacity>
           </View>

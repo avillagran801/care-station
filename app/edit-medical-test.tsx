@@ -2,17 +2,27 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useEditItem } from '@/context/EditContext';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 
 export default function EditMedicationScreen() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter(); 
+  const router = useRouter();
+  const { selectedItem } = useEditItem();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [URL, setURL] = useState('');
+
+  useEffect(() => {
+    if (selectedItem) {
+      setName(selectedItem.name || '');
+      setDescription(selectedItem.description || '');
+      setDate(selectedItem.emmision_date || '');
+      setURL(selectedItem.file_url || '');
+    }
+  }, [selectedItem]);
 
   const edit_medical_test = () => {
   
@@ -30,7 +40,7 @@ export default function EditMedicationScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader title="Editar Examen Médico" />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text>Editando exámen médico con ID: {id}</Text>
+        <Text>Editando exámen médico con ID: {selectedItem?.id}</Text>
         <Text style={styles.placeholderText}>
           <StyledTextInput 
             label="Nombre del examen médico" 
@@ -42,7 +52,6 @@ export default function EditMedicationScreen() {
           <StyledTextInput 
             label="Descripción" 
             placeholder="Puede ser donde se realizó, en que consistía o para qué era." 
-            secureTextEntry 
             value={description}
             onChangeText={setDescription} 
             autoCapitalize="none"
@@ -50,7 +59,6 @@ export default function EditMedicationScreen() {
           <StyledTextInput 
             label="Fecha de emisión" 
             placeholder="DD/MM/AAAA" 
-            secureTextEntry 
             value={date}
             onChangeText={setDate} 
             autoCapitalize="none"
@@ -58,7 +66,6 @@ export default function EditMedicationScreen() {
           <StyledTextInput 
             label="URL del Documento/Resultados" 
             placeholder="https://www.URLdelDocumento.com" 
-            secureTextEntry 
             value={URL}
             onChangeText={setURL} 
             autoCapitalize="none"
