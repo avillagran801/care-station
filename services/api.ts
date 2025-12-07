@@ -173,15 +173,4 @@ export const patientsApi = {
   },
 };
 
-export const tasksApi = {
-  getTasks: () => {
-    return apiClient.get('/tasks');
-  },
-}
-
-export const healthApi = {
-  check: () => apiClient.get('/health'),
-};
-
-
 export default apiClient;
