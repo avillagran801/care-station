@@ -2,9 +2,10 @@ import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
-import { healthApi, tasksApi } from '@/services/api';
+import { healthApi, patientsApi, tasksApi } from '@/services/api';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ImageBackground, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 // Interfaces
 interface User {
@@ -31,7 +32,7 @@ interface Task {
 
 export default function HomeScreen() {
   const [user, setUser] = useState<User | null>(null);
-  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
 
@@ -41,38 +42,6 @@ export default function HomeScreen() {
   const [tempName, setTempName] = useState('');
 
   const { groupId } = useSelectedGroup();
-
-  /*
-  const fetchDashboardData = async () => {
-    try{
-      const userRes = await userApi.me();
-      const userData = userRes.data;
-      setUser(userData);
-      setTempName(userData.names);
-
-      const groupsRes = await groupsApi.getMyGroups();
-      const myGroups = groupsRes.data;
-
-      if (myGroups && myGroups.length > 0) {
-        const activeGroupId = myGroups[0].id;
-
-        const allPatientsRes = await patientApi.getAll();
-        const allPatients = allPatientsRes.data;
-
-        const foundPatient = allPatients.find((p: Patient) => p.care_group_id == activeGroupId);
-        if (foundPatient) {
-          setCurrentPatient(foundPatient);
-        } 
-      }
-    } catch (error) {
-      console.error('Error cargando dashboard:', error);
-      Toast.show({ type: 'error', text1: 'Error de conexión', text2: 'No se pudieron cargar los datos.' });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-  */
 
   const fetchDashboardData = async() => {
     if(!groupId){
@@ -88,10 +57,15 @@ export default function HomeScreen() {
       setUpcomingEvents(response.data);
       console.log("Tareas del grupo recuperadas.");
       console.log(response.data);
+
+      const response2 = await patientsApi.getByGroup(Number(groupId));
+      setPatient(response2.data);
+      console.log("Información del paciente recuperada");
+      console.log(response2.data);
     }
     catch (error: any){
-      console.error("Error al intentar recuperar las tareas del grupo:", error.response?.data || error.message);
-      Alert.alert("Error al intentar recuperar las tareas del grupo", error.response?.data || error.message)
+      console.error('Error cargando dashboard:', error);
+      Toast.show({ type: 'error', text1: 'Error de conexión', text2: 'No se pudieron cargar los datos.' });
     }
     finally {
       setLoading(false);
@@ -171,7 +145,7 @@ export default function HomeScreen() {
           <Text style={{ fontSize: 24 }}>🔔</Text>
         </View>
 
-        <PatientCard patient={currentPatient} loading={loading} />
+        <PatientCard patient={patient} loading={loading} />
 
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Próximos Eventos</Text>

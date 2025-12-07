@@ -8,8 +8,9 @@ import { DatabaseTask } from '@/lib/databaseInterface';
 import { tasksApi } from '@/services/api';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalendarProvider } from 'react-native-calendars';
+import Toast from 'react-native-toast-message';
 
 export default function DailyTasksScreen() {
   const today = (new Date()).toISOString().slice(0, 10);
@@ -22,7 +23,11 @@ export default function DailyTasksScreen() {
 
   const handleTasks = async () => {
     if(!groupId){
+      
       Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
+
+      setLoading(false);
       return;  
     }
 
@@ -44,7 +49,7 @@ export default function DailyTasksScreen() {
 
   useEffect(() => {
     handleTasks();
-  });
+  }, []);
 
   const transformRawDataToAgenda = (tasks: DatabaseTask[]): AgendaItem[] => {
     const grouped: { [key: string]: AgendaItem } = {};
@@ -93,6 +98,19 @@ export default function DailyTasksScreen() {
   const agendaItems = useMemo (() => {
     return transformRawDataToAgenda(rawTasks);
   }, [rawTasks]);
+
+
+  if (loading){
+    return (
+      <CustomSafeArea>
+        <ImageBackground source={require('../../assets/images/background2.jpg')} style={styles.backgroundImage}>
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color={Colors.primaryDark} />
+          </View>
+        </ImageBackground>
+      </CustomSafeArea>
+    )
+  }
   
   return (
     <CustomSafeArea withTabBar>

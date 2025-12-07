@@ -82,13 +82,6 @@ export const groupsApi = {
   },
 }
 
-// AÑADIDO, NO SE SI ESTÁ BIEN
-export const patientApi = {
-  registerPatient: (data: any) => { 
-    return apiClient.post('/patient', data);
-  },
-}
-
 export const tasksApi = {
   // GET /tasks/by-group/{care_group_id}
   listByGroup: (care_group_id: number) => {
@@ -170,6 +163,11 @@ export const patientsApi = {
     address?: string | null;
   }) => {
     return apiClient.post('/patients', data);
+  },
+
+  // GET /patients/by-group/{care_group_id}
+  getByGroup: (care_group_id: number) => {
+    return apiClient.get(`/patients/by-group/${care_group_id}`);
   },
 };
 
