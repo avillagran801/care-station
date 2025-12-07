@@ -52,22 +52,34 @@ export const authApi = {
   login: (data: { email: string; password: string }) => {
     return apiClient.post('/login', data);
   },
-  register: (data: any) => { 
+  register: (data: any) => {
     return apiClient.post('/register', data);
   },
 };
 
+export const userApi = {
+  me: () => apiClient.get('/user'),
+};
+
 export const groupsApi = {
-    getMyGroups: () => {
-        return apiClient.get('/my-groups');
-    },
-    // AÑADIDOS DE AQUÍ A ABAJO, NO SE SI ESTÁ BIEN
-    createGroup: (data: any) => {
-        return apiClient.post('/my-groups', data);
-    },
-    findGroup: (data: {code: string}) => {
-      return ;
-    },
+  getMyGroups: () => {
+    return apiClient.get('/my-groups');
+  },
+  // Método para unirse usando el código
+  joinGroup: (data: { code: string }) => {
+    return apiClient.post('/join-group', data);
+  },
+  // Método para generar el código (Solo admins)
+  generateInvitation: (groupId: string | number) => {
+    return apiClient.post(`/care-groups/${groupId}/invitation`);
+  },
+  // AÑADIDOS DE AQUÍ A ABAJO, NO SE SI ESTÁ BIEN
+  createGroup: (data: any) => {
+    return apiClient.post('/my-groups', data);
+  },
+  findGroup: (data: { code: string }) => {
+    return;
+  },
 }
 
 // AÑADIDO, NO SE SI ESTÁ BIEN
@@ -159,6 +171,16 @@ export const patientsApi = {
   }) => {
     return apiClient.post('/patients', data);
   },
+};
+
+export const tasksApi = {
+  getTasks: () => {
+    return apiClient.get('/tasks');
+  },
+}
+
+export const healthApi = {
+  check: () => apiClient.get('/health'),
 };
 
 
