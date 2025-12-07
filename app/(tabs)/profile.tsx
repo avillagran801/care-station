@@ -92,12 +92,17 @@ export default function ProfileScreen() {
             <ProfileLink
               title="Medicamentos"
               icon="medkit-outline"
-              onPress={() => router.push('./medications')}
+              onPress={() => router.push('../medications')}
+            />
+            <ProfileLink
+              title="Prescripciones"
+              icon="calendar"
+              onPress={() => router.push('../prescriptions')}
             />
             <ProfileLink
               title="Exámenes Médicos"
               icon="document-text-outline"
-              onPress={() => router.push('./medical-tests')}
+              onPress={() => router.push('../medical-tests')}
             />
             <ProfileLink
               title="Encargados / Contactos"
