@@ -1,10 +1,10 @@
 import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { groupsApi, healthApi, patientApi, tasksApi, userApi } from '@/services/api';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { healthApi, tasksApi } from '@/services/api';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ImageBackground, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { ActivityIndicator, Alert, Image, ImageBackground, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 // Interfaces
 interface User {
@@ -30,7 +30,6 @@ interface Task {
 }
 
 export default function HomeScreen() {
-
   const [user, setUser] = useState<User | null>(null);
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<Task[]>([]);
@@ -41,6 +40,9 @@ export default function HomeScreen() {
   const [editing, setEditing] = useState(false);
   const [tempName, setTempName] = useState('');
 
+  const { groupId } = useSelectedGroup();
+
+  /*
   const fetchDashboardData = async () => {
     try{
       const userRes = await userApi.me();
@@ -58,21 +60,8 @@ export default function HomeScreen() {
         const allPatients = allPatientsRes.data;
 
         const foundPatient = allPatients.find((p: Patient) => p.care_group_id == activeGroupId);
-
         if (foundPatient) {
           setCurrentPatient(foundPatient);
-
-          try{
-            const tasksRes = await tasksApi.getPendingTasks(foundPatient.patient_id);
-            const tasksList = Array.isArray(tasksRes.data) ? tasksRes.data : [];
-            setPendingTasks(tasksList);
-
-            const eventsRes = await tasksApi.getUpcomingTasks(foundPatient.patient_id);
-            const eventsList = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-            setUpcomingEvents(eventsList);
-          } catch (taskError) {
-            console.log("Error cargando tareas (puede que no haya):", taskError);
-          }
         } 
       }
     } catch (error) {
@@ -83,6 +72,31 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   };
+  */
+
+  const fetchDashboardData = async() => {
+    if(!groupId){
+      Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
+      setLoading(false);
+      return;  
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await tasksApi.listUpcomingByGroup(Number(groupId));
+      setUpcomingEvents(response.data);
+      console.log("Tareas del grupo recuperadas.");
+      console.log(response.data);
+    }
+    catch (error: any){
+      console.error("Error al intentar recuperar las tareas del grupo:", error.response?.data || error.message);
+      Alert.alert("Error al intentar recuperar las tareas del grupo", error.response?.data || error.message)
+    }
+    finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     const checkBackendStatus = async () => {

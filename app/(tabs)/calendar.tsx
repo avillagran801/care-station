@@ -3,6 +3,7 @@ import ExpandableCalendarSelector from '@/components/calendar/ExpandableCalendar
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import { TaskStatus } from '@/components/ui/TaskCard';
 import Colors from '@/constants/Colors';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
 import { DatabaseTask } from '@/lib/databaseInterface';
 import { tasksApi } from '@/services/api';
 import moment from 'moment';
@@ -17,19 +18,17 @@ export default function DailyTasksScreen() {
   const [rawTasks, setRawTasks] = useState<DatabaseTask[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // CHANGE LATER
-  const care_group_id = 1;
+  const { groupId } = useSelectedGroup();
 
   const handleTasks = async () => {
-    if(!care_group_id){
+    if(!groupId){
       Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
       return;  
     }
 
     setLoading(true);
     try {
-      // CHANGE LATER
-      const response = await tasksApi.listByGroup(care_group_id);
+      const response = await tasksApi.listByGroup(Number(groupId));
       setRawTasks(response.data);
       console.log("Tareas del grupo recuperadas.");
       console.log(response.data);
@@ -45,7 +44,7 @@ export default function DailyTasksScreen() {
 
   useEffect(() => {
     handleTasks();
-  }, []);
+  });
 
   const transformRawDataToAgenda = (tasks: DatabaseTask[]): AgendaItem[] => {
     const grouped: { [key: string]: AgendaItem } = {};

@@ -3,6 +3,7 @@ import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
 import { careGroupApi, groupsApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -36,6 +37,9 @@ export default function SelectGroupScreen() {
   const [invitationCode, setInvitationCode] = useState('');
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
+  // Allows to save the selected group in global context
+  const { setGroupId } = useSelectedGroup();
+
   useEffect(() => {
     loadGroups();
   }, []);
@@ -62,6 +66,7 @@ export default function SelectGroupScreen() {
 
   const handleGroupPress = (group: Group) => {
     console.log("Entrando a grupo ID:", group.id);
+    setGroupId(group.id);
     router.replace('/(tabs)');
   };
 
