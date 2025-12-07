@@ -1,3 +1,4 @@
+import GradientButton from '@/components/GradientButton';
 import ActionSheetModal, { ActionOption } from '@/components/ui/ActionSheetModal';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
@@ -9,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 type Group = {
@@ -163,48 +164,90 @@ export default function SelectGroupScreen() {
   ];
 
   const renderGroupItem = ({ item }: { item: Group }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={() => handleGroupPress(item)}>
+  <TouchableOpacity 
+    style={styles.card} 
+    activeOpacity={0.7} 
+    onPress={() => handleGroupPress(item)}
+  >
+    
+    {/* Lógica condicional para el Avatar/Icono */}
+    {item.photoUrl ? (
+      // Opción A: Mostrar Imagen real si existe la URL
       <Image
         source={{ uri: item.photoUrl }}
         style={styles.cardImage}
-        defaultSource={require('../../assets/images/avatar.png')} // Imagen por defecto si falla la URL
       />
-
-      <View style={styles.cardContent}>
-        <Text style={styles.patientName}>{item.patientName}</Text>
-        <Text style={styles.memberCount}>
-          {item.membersCount} cuidadores • {item.role === 'admin' ? 'Administrador' : 'Miembro'}
-        </Text>
+    ) : (
+      // Opción B: Mostrar Icono de Grupo/Persona si no hay URL
+      <View style={styles.cardImage}>
+        <Ionicons 
+          name="people" // Icono de grupo genérico
+          size={30} 
+          color={Colors.primary || '#007AFF'} 
+        />
       </View>
+    )}
+    
+    {/* Contenido principal del grupo */}
+    <View style={styles.cardContent}>
+      <Text style={styles.patientName}>{item.patientName}</Text>
+      <Text style={styles.memberCount}>
+        {item.membersCount} cuidadores • {item.role === 'admin' ? 'Administrador' : 'Miembro'}
+      </Text>
+    </View>
 
-      {item.role === 'admin' && (
-        <TouchableOpacity style={styles.optionsButton} onPress={() => openGroupMenu(item)}>
-          <Ionicons name="ellipsis-vertical" size={24} color={Colors.grey || '#999'} />
-        </TouchableOpacity>
-      )}
-    </TouchableOpacity>
-  );
+    {/* Botón de Opciones (solo visible para administradores) */}
+    {item.role === 'admin' && (
+      <TouchableOpacity 
+        style={styles.optionsButton} 
+        onPress={() => openGroupMenu(item)}
+      >
+        <Ionicons name="ellipsis-vertical" size={24} color={Colors.grey || '#999'} />
+      </TouchableOpacity>
+    )}
+  </TouchableOpacity>
+);
 
   return (
     <CustomSafeArea>
+      <ImageBackground 
+              source={require('../../assets/images/background2.jpg')} 
+              resizeMode="cover"
+              style={styles.backgroundImage}
+      >
       <View style={styles.container}>
 
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setIsUserMenuVisible(true)} style={styles.avatarContainer}>
-            <Image
-              source={require('../../assets/images/avatar.png')} // Podrías usar authState.user.photoUrl si lo tienes
-              style={styles.userAvatar}
+            <Ionicons
+              name="person-circle" // Icono de usuario / persona
+              size={styles.userAvatar.width || 48} // Usa el tamaño que tenías en el estilo
+              color={styles.userAvatar.tintColor || 'white'} // Usa el color que necesites
             />
             <View style={styles.badge} />
           </TouchableOpacity>
 
-          <View>
-            <Text style={styles.greeting}>Hola!</Text>
-            <Text style={styles.subGreeting}>Selecciona un grupo de cuidado</Text>
+          <View> 
+            <Text style={styles.greeting}>¡Hola! User Name</Text>
+            
+            {/* Nuevo Contenedor con Diseño Elegante */}
+            <View style={styles.subGreetingContainer}>
+              <Text style={styles.subGreeting}>Selecciona un grupo de cuidado  </Text>
+              <Ionicons 
+                name="search-outline" // Icono de lupa
+                size={14} 
+                color='#666' // Usamos el color principal de acento
+              />
+            </View>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Tus Grupos</Text>
+        <View style={styles.sectionTitleContainer}>
+          {/* Icono de Equipo */}
+          
+          {/* Texto del Título */}
+          <Text style={styles.sectionTitle}>Tus grupos actuales son:</Text>
+        </View>
 
         {isLoading ? (
           <View style={{ marginTop: 50 }}>
@@ -226,22 +269,19 @@ export default function SelectGroupScreen() {
         )}
 
         <View style={styles.footer1}>
-          <StyledButton
-            title="Unirse a nuevo grupo"
-            onPress={() => router.replace('/find-group' as any)}
-            //onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Unirse a grupo en construcción' })}
-            variant="secondary"
-            style={{ borderWidth: 1, borderColor: Colors.primary }}
+          {/* Botón SUPERIOR (Crear nuevo grupo) usando bottom: 70 */}
+          <GradientButton
+            title="Crear nuevo grupo"
+            onPress={() => router.replace('/create-group')}
+            // Ya no necesitas style={{ marginBottom: 10 }} aquí si footer2 ya tiene el espaciado
           />
         </View>
 
         <View style={styles.footer2}>
-          <StyledButton
-            title="Crear nuevo grupo"
-            onPress={() => router.replace('/create-group')}
-            //onPress={() => Toast.show({ type: 'info', text1: 'Pronto', text2: 'Crear grupo en construcción' })}
-            variant="secondary"
-            style={{ borderWidth: 1, borderColor: Colors.primary }}
+          {/* Botón INFERIOR (Unirse a nuevo grupo) usando bottom: 0 */}
+          <GradientButton
+            title="Unirse a nuevo grupo"
+            onPress={() => router.replace('/find-group' as any)}
           />
         </View>
 
@@ -295,26 +335,133 @@ export default function SelectGroupScreen() {
         </Modal>
 
       </View>
+      </ImageBackground>
     </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: { 
+    flex: 1, 
+    width: '100%' 
+  },
+  
   container: { flex: 1, paddingHorizontal: 20 },
-  header: { flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 30, gap: 15 },
-  avatarContainer: { position: 'relative' },
+  header: { flexDirection: 'row', alignItems: 'center', marginTop: 30, marginBottom: 30, gap: 15 },
+  avatarContainer: {
+    width: 50,           
+    height: 49,          
+    borderRadius: 25,    
+    borderWidth: 2,      
+    borderColor: Colors.white, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    position: 'relative', 
+  },
+  subGreetingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center', // Centra el texto y el icono verticalmente
+    
+    backgroundColor: '#f0f0f0ca', // Fondo muy suave
+    borderRadius: 15, // Bordes redondeados para la forma de cápsula
+    paddingVertical: 5,   // Relleno vertical
+    paddingHorizontal: 10, // Relleno horizontal
+  
+    borderWidth: 1,
+    borderColor: '#e0e0e03c', 
+    
+    // Sombra sutil (solo si el fondo no es blanco puro)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 2, 
+  },
+
+  sectionTitleContainer: {
+    // Diseño Cápsula
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    
+    // Estilos de Apariencia
+    backgroundColor: '#f9d07284', // Un fondo de acento claro (ej. azul claro)
+    borderRadius: 15, // Bordes redondeados
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    
+    // Espaciado dentro de la pantalla
+    marginTop: 5,
+    marginBottom: 15,
+  },
   userAvatar: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: Colors.primary },
   badge: { position: 'absolute', bottom: 0, right: 0, width: 14, height: 14, borderRadius: 7, backgroundColor: '#22c55e', borderWidth: 2, borderColor: Colors.white },
-  greeting: { fontSize: 18, fontWeight: 'bold', color: Colors.text || '#000' },
-  subGreeting: { fontSize: 14, color: Colors.textLight || '#666' },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.primaryDark, marginBottom: 15 },
+  greeting: { fontFamily: 'Poppins-Bold', fontSize: 18, fontWeight: 'bold', color: Colors.text || '#000',  },
+  subGreeting: { fontFamily: 'Poppins-Bold', fontSize: 12, color: Colors.text || '#666',},
+  sectionTitle: { 
+    fontFamily: 'Poppins-Bold', 
+    fontSize: 15, // Ligeramente más pequeño para que encaje bien en la cápsula
+    color: Colors.text, // Un color oscuro para contraste
+    
+    // Separación del icono
+    marginLeft: 8, 
+    marginRight: 0, 
+    // Aseguramos que no tenga márgenes innecesarios que rompan el padding del contenedor
+    marginBottom: 0, 
+  },
   listContainer: { gap: 15, paddingBottom: 100 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.white, padding: 15, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
-  cardImage: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#eee' },
-  cardContent: { flex: 1, marginLeft: 15 },
-  patientName: { fontSize: 16, fontWeight: 'bold', color: Colors.text || '#000' },
-  memberCount: { fontSize: 12, color: Colors.textLight || '#666', marginTop: 2 },
-  optionsButton: { padding: 10 },
+  card: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#ffffffbe' , 
+    padding: 15, 
+    borderRadius: 15, // Más redondeado (ej. 15 o 20)
+    
+    // Sombra más pronunciada y elegante
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 4 }, // Sombra más vertical
+    shadowOpacity: 0.08, // Sombra sutil
+    shadowRadius: 8, 
+    elevation: 4, 
+  },
+  cardImage: { 
+    width: 55, 
+    height: 55, 
+    borderRadius: 28, // Hace el círculo perfecto
+    backgroundColor: '#EFEFEF', // Fondo por defecto
+    borderWidth: 1, 
+    borderColor: '#E0E0E0',
+    marginRight: 15,
+    
+    // Centra el Ionicons cuando se usa como fallback
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  
+  cardContent: { 
+    flex: 1, // Esto es CRUCIAL para que ocupe todo el espacio restante 
+    // (empujando el botón de opciones a la derecha)
+    marginLeft: 0, // Ya no necesitamos margin-left aquí si lo pusimos en cardImage
+  },
+  patientName: { 
+    fontSize: 17, 
+    fontFamily: 'Poppins-SemiBold', // Usar una variante elegante y legible
+    color: '#333' 
+  },
+  memberCount: { 
+    fontSize: 13, 
+    color: Colors.textLight || '#666', 
+    marginTop: 2, 
+    fontFamily: 'Poppins-Regular',
+  },
+
+  optionsButton: { 
+    padding: 5, // Más pequeño y limpio
+    marginLeft: 10,
+    // Aseguramos que esté alineado verticalmente
+    alignSelf: 'center', 
+  },
+  
   footer1: { position: 'absolute', bottom: 0, left: 20, right: 20 },
   footer2: { position: 'absolute', bottom: 70, left: 20, right: 20 },
   modalOverlay: {
@@ -353,14 +500,14 @@ const styles = StyleSheet.create({
   },
   codeContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#f3f4f648',
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#573bb4ff',
     borderStyle: 'dashed',
   },
   codeText: {
