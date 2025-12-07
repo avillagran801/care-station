@@ -3,30 +3,14 @@ import ExpandableCalendarSelector from '@/components/calendar/ExpandableCalendar
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import { TaskStatus } from '@/components/ui/TaskCard';
 import Colors from '@/constants/Colors';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
 import { DatabaseTask } from '@/lib/databaseInterface';
-import apiClient from '@/services/api';
+import { tasksApi } from '@/services/api';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalendarProvider } from 'react-native-calendars';
-
-const agendaListTest: AgendaItem[] = [
-  {
-    title: "2025-11-11",
-    data: [
-      { id: 1, title: 'Compra de Ibuprofeno 200ml', time: '10:00 AM', status: 'Done', assignedTo: 'Ana' },
-      { id: 2, title: 'Ejercicios de movilidad', time: '12:00 PM', status: 'In Progress', assignedTo: 'Bastian' },
-      { id: 3, title: 'Preparar sopa', time: '07:00 PM', status: 'To-do', assignedTo: 'Jorge' },
-    ]
-  },
-  {
-    title: "2025-11-12",
-    data: [
-      { id: 4, title: 'Administración de medicamentos', time: '07:00 PM', status: 'To-do', assignedTo: 'Cano' },
-      { id: 5, title: 'Cita con el Dr. Breach', time: '09:00 PM', status: 'To-do', assignedTo: 'Fran' },
-    ]
-  }
-];
+import Toast from 'react-native-toast-message';
 
 export default function DailyTasksScreen() {
   const today = (new Date()).toISOString().slice(0, 10);
@@ -35,19 +19,21 @@ export default function DailyTasksScreen() {
   const [rawTasks, setRawTasks] = useState<DatabaseTask[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // CHANGE LATER
-  const care_group_id = 1;
+  const { groupId } = useSelectedGroup();
 
   const handleTasks = async () => {
-    if(!care_group_id){
+    if(!groupId){
+      
       Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
+
+      setLoading(false);
       return;  
     }
 
     setLoading(true);
     try {
-      // CHANGE LATER
-      const response = await apiClient.post("/readTasks", { care_group_id: care_group_id });
+      const response = await tasksApi.listByGroup(Number(groupId));
       setRawTasks(response.data);
       console.log("Tareas del grupo recuperadas.");
       console.log(response.data);
@@ -112,6 +98,19 @@ export default function DailyTasksScreen() {
   const agendaItems = useMemo (() => {
     return transformRawDataToAgenda(rawTasks);
   }, [rawTasks]);
+
+
+  if (loading){
+    return (
+      <CustomSafeArea>
+        <ImageBackground source={require('../../assets/images/background2.jpg')} style={styles.backgroundImage}>
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color={Colors.primaryDark} />
+          </View>
+        </ImageBackground>
+      </CustomSafeArea>
+    )
+  }
   
   return (
     <CustomSafeArea withTabBar>
