@@ -222,7 +222,7 @@ export default function SelectGroupScreen() {
             <Ionicons
               name="person-circle" // Icono de usuario / persona
               size={styles.userAvatar.width || 48} // Usa el tamaño que tenías en el estilo
-              color={styles.userAvatar.tintColor || 'white'} // Usa el color que necesites
+              color={Colors.primary || 'white'} // Usa el color que necesites
             />
             <View style={styles.badge} />
           </TouchableOpacity>

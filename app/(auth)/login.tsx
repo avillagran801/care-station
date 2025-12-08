@@ -96,6 +96,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail} 
             autoCapitalize="none"
+            leftIcon="mail-outline" 
           />
           <StyledTextInput 
             label="Contraseña" 
@@ -103,6 +104,7 @@ export default function LoginScreen() {
             secureTextEntry 
             value={password}
             onChangeText={setPassword} 
+            leftIcon="lock-closed-outline" 
           />
         </View>
 
@@ -175,9 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     height: 'auto',
-    width: '100%',
     maxWidth: 480,
-
     fontFamily: 'Poppins-Regular',
     flex: 1,
     alignItems: 'center',
@@ -188,14 +188,14 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.grey,
     fontWeight: 'bold',
-    marginTop: 30,
+    marginTop: 15,
     fontFamily: 'Poppins-Medium',
   },
 
   linkText2: {
     color: Colors.primary,
     fontWeight: 'bold',
-    marginTop: 30,
+    marginTop: 5,
     fontFamily: 'Poppins-Medium',
     fontSize: 16,
   },
