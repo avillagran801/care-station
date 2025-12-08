@@ -35,7 +35,7 @@ export default function EditProfileScreen() {
         Toast.show({ type: 'info', text1: 'Función en progreso', text2: 'Selector de imagen de perfil.' });
     };
     
-    // --- Renderizado del Botón de Guardar ---
+
     const renderSaveButton = () => (
         <TouchableOpacity
             style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
@@ -54,8 +54,6 @@ export default function EditProfileScreen() {
     return (
         <CustomSafeArea>
             <ImageBackground 
-                // *** RUTA PROBABLEMENTE CORRECTA SI APP ESTÁ EN UN SUBCONTENEDOR ***
-                // Si la ruta anterior falló, intentamos la ruta común de proyectos Expo/CLI
                 source={require('../assets/images/background2.jpg')} 
                 resizeMode="cover"
                 style={styles.backgroundImage}
@@ -133,7 +131,6 @@ export default function EditProfileScreen() {
 
 
 const styles = StyleSheet.create({
-    // --- ESTILOS DE FONDO ---
     backgroundImage: {
         flex: 1, 
         width: '100%',
@@ -147,7 +144,6 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     
-    // --- ESTILO PRINCIPAL DE TARJETA ---
     formCard: {
         backgroundColor: 'rgba(255, 255, 255, 0.95)', 
         borderRadius: 20, 
@@ -163,14 +159,13 @@ const styles = StyleSheet.create({
     },
     
     title: {
-        fontSize: 26,
+        fontSize: 20,
         fontFamily: 'Poppins-Bold', 
         color: Colors.primaryDark || '#007AFF',
         textAlign: 'center',
         marginBottom: 20,
     },
     
-    // --- ESTILOS DE AVATAR ---
     avatarPicker: {
         marginBottom: 25,
         position: 'relative',
@@ -206,14 +201,15 @@ const styles = StyleSheet.create({
         borderColor: Colors.white,
     },
     
-    // --- Estilos de Formulario y Botones ---
     formContainerInputs: { 
         width: '100%', 
         marginBottom: 20, 
+        fontFamily: 'Poppins-Regular',
     },
     disabledInput: { 
         opacity: 0.6, 
         backgroundColor: '#F0F0F0', 
+        fontFamily: 'Poppins-Regular',
     },
     saveButton: {
         width: '100%',
