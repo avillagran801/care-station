@@ -1,65 +1,383 @@
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
+import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
+import React, { createElement, useState } from 'react';
+import { Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
-const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses', 'Todos los años'];
+// Dejo ejemplos para categorias, Asignaciones y Formatos de repetición
+const mockMembers = [
+    { id: '1', name: 'Yo (Admin)' },
+    { id: '2', name: 'Maria (Cuidadora)' },
+    { id: '3', name: 'Jorge (Hijo)' },
+];
+const mockCategories = ['Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
+const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
+
+// Los inputs HTML necesitan strings formato "YYYY-MM-DD" y "HH:MM"
+const formatDateForWeb = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const formatTimeForWeb = (date: Date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+
+const PlatformDatePicker = ({ 
+  value, 
+  onChange, 
+  mode = 'date', 
+}: { 
+  value: Date; 
+  onChange: (event: any, date?: Date) => void; 
+  mode?: 'date' | 'time'; 
+}) => {
+  const [showMobilePicker, setShowMobilePicker] = useState(false);
+
+  const handleMobileChange = (event: any, selectedDate?: Date) => {
+    setShowMobilePicker(false);
+    if (selectedDate) onChange(event, selectedDate);
+  };
+
+  const handleWebChange = (e: any) => {
+    const stringVal = e.target.value; 
+    if(!stringVal) return;
+
+    const newDate = new Date(value); 
+
+    if (mode === 'date') {
+        // stringVal viene como "2025-11-20"
+        const [y, m, d] = stringVal.split('-').map(Number);
+        newDate.setFullYear(y);
+        newDate.setMonth(m - 1); // Meses en rango 0-11
+        newDate.setDate(d);
+    } else {
+        // stringVal viene como "14:30"
+        const [h, m] = stringVal.split(':').map(Number);
+        newDate.setHours(h);
+        newDate.setMinutes(m);
+    }
+    onChange(e, newDate);
+  };
+
+  //La libreria datetimepicker no funciona en web, por lo que tendremos que usar otra libreria o bien usar esta solución
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.webDateInputContainer}>
+        {createElement('input', {
+            type: mode === 'time' ? 'time' : 'date',
+            value: mode === 'date' ? formatDateForWeb(value) : formatTimeForWeb(value),
+            onChange: handleWebChange,
+            style: {
+                border: 'none',
+                background: 'transparent',
+                width: '100%',
+                height: '100%',
+                fontSize: 16,
+                color: Colors.text,
+                fontFamily: 'Poppins-Regular',
+                outline: 'none' 
+            }
+        })}
+      </View>
+    );
+  }
+
+  return (
+    <View>
+      <TouchableOpacity 
+        style={styles.dateInput} 
+        onPress={() => setShowMobilePicker(true)}
+      >
+        <Ionicons 
+          name={mode === 'time' ? "time-outline" : "calendar-outline"} 
+          size={20} 
+          color={Colors.primary} 
+        />
+        <Text style={{ marginLeft: 10, color: Colors.text }}>
+          {mode === 'date' 
+            ? value.toLocaleDateString() 
+            : value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        </Text>
+      </TouchableOpacity>
+
+      {showMobilePicker && (
+        <DateTimePicker
+          value={value}
+          mode={mode}
+          is24Hour={true}
+          display="default"
+          onChange={handleMobileChange}
+        />
+      )}
+    </View>
+  );
+};
+
 
 export default function AddTaskScreen() {
-  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  
+  const [assignedTo, setAssignedTo] = useState(mockMembers[0]);
+  const [category, setCategory] = useState(mockCategories[0]);
   const [repetition, setRepetition] = useState(repetitionOptions[0]);
 
-  const handleSelectRepetition = (option: string) => {
-    setRepetition(option);
-    setModalVisible(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date()); 
+  const [endDate, setEndDate] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date(new Date().setHours(new Date().getHours() + 1))); 
+
+  const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'repetition'>('none');
+
+  const handleCreateTask = () => {
+    if (!title.trim()) {
+        Toast.show({ type: 'error', text1: 'Falta información', text2: 'Debes escribir un título para la tarea.' });
+        return;
+    }
+
+    const finalStart = new Date(startDate);
+    finalStart.setHours(startTime.getHours(), startTime.getMinutes());
+
+    const finalEnd = new Date(endDate);
+    finalEnd.setHours(endTime.getHours(), endTime.getMinutes());
+
+    if (finalEnd < finalStart) {
+        Toast.show({ type: 'info', text1: 'Cuidado', text2: 'La fecha de término es anterior al inicio.' });
+        return;
+    }
+
+    const payload = {
+        title,
+        description,
+        assigned_to: assignedTo.id,
+        category,
+        repetition,
+        start_time: finalStart.toISOString(),
+        end_time: finalEnd.toISOString(),
+    };
+
+    console.log("Enviando Tarea:", payload);
+    Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
+    router.replace('/(tabs)/calendar');
   };
+
+  const renderSelector = (label: string, value: string, icon: keyof typeof Ionicons.glyphMap, onPress: () => void) => (
+    <View style={styles.inputContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <TouchableOpacity style={styles.selectorButton} onPress={onPress}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Ionicons name={icon} size={20} color={Colors.primary} />
+                <Text style={styles.selectorText}>{value}</Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color={Colors.grey} />
+        </TouchableOpacity>
+    </View>
+  );
 
   return (
     <CustomSafeArea>
-      <ScreenHeader title="Agregar tarea" />
+      <ScreenHeader title="Nueva Tarea" />
+      
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.placeholderText}>[Formulario para Tarea, Asignado, Categoría, Descripción...]</Text>
-        <Text style={styles.placeholderText}>[Formulario para Fecha y Hora de Inicio/Término]</Text>
+        
+        <StyledTextInput 
+            label="Tarea" 
+            placeholder="Ej: Tomar pastilla..." 
+            value={title}
+            onChangeText={setTitle}
+        />
 
-        <TouchableOpacity style={styles.repetitionButton} onPress={() => setModalVisible(true)}>
-          <Ionicons name="refresh-outline" size={24} color={Colors.text} />
-          <Text style={styles.repetitionText}>{repetition}</Text>
-        </TouchableOpacity>
+        <StyledTextInput 
+            label="Descripción" 
+            placeholder="Detalles adicionales..." 
+            value={description}
+            onChangeText={setDescription}
+            multiline
+        />
 
-        <StyledButton title="Add Project" onPress={() => {}} style={{ marginTop: 'auto' }} />
+        <View style={styles.row}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+                {renderSelector("Asignado a", assignedTo.name.split(' ')[0], "person-outline", () => setActiveModal('assign'))}
+            </View>
+            <View style={{ flex: 1 }}>
+                {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
+            </View>
+        </View>
+
+        <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
+        <View style={styles.row}>
+            <View style={{ flex: 1.5, marginRight: 10 }}>
+                <Text style={styles.subLabel}>Fecha</Text>
+                <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.subLabel}>Hora</Text>
+                <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+            </View>
+        </View>
+
+        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
+        <View style={styles.row}>
+            <View style={{ flex: 1.5, marginRight: 10 }}>
+                <Text style={styles.subLabel}>Fecha</Text>
+                <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.subLabel}>Hora</Text>
+                <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+            </View>
+        </View>
+
+        <View style={{ marginTop: 10 }}>
+            {renderSelector("Repetición", repetition, "repeat-outline", () => setActiveModal('repetition'))}
+        </View>
+
+        <View style={{ marginTop: 10 }}>
+            <StyledButton title="Add Project" onPress={handleCreateTask} />
+        </View>
+
       </ScrollView>
 
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPressOut={() => setModalVisible(false)}>
+      {/* MODALES */}
+      <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
           <View style={styles.modalContent}>
-            {repetitionOptions.map((option, index) => (
-              <TouchableOpacity key={index} style={styles.modalOption} onPress={() => handleSelectRepetition(option)}>
-                <View style={styles.radioButtonOuter}>
-                  {repetition === option && <View style={styles.radioButtonInner} />}
-                </View>
-                <Text style={styles.modalOptionText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
+            <Text style={styles.modalTitle}>
+                {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
+            </Text>
+            
+            <ScrollView style={{ maxHeight: 300 }}>
+                {activeModal === 'assign' && mockMembers.map((m) => (
+                    <TouchableOpacity key={m.id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{m.name}</Text>
+                        {assignedTo.id === m.id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'category' && mockCategories.map((c, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{c}</Text>
+                        {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{r}</Text>
+                        {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
           </View>
         </TouchableOpacity>
       </Modal>
+
     </CustomSafeArea>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: { padding: 20, flexGrow: 1 },
-  placeholderText: { color: Colors.text, marginVertical: 20, textAlign: 'center' },
-  repetitionButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 10, marginVertical: 20 },
-  repetitionText: { marginLeft: 10, fontSize: 16, color: Colors.text },
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContent: { backgroundColor: Colors.primaryLight, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 30, paddingBottom: 50 },
-  modalOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15 },
-  modalOptionText: { fontSize: 18, marginLeft: 15, color: Colors.text },
-  radioButtonOuter: { height: 24, width: 24, borderRadius: 12, borderWidth: 2, borderColor: Colors.primary, alignItems: 'center', justifyContent: 'center' },
-  radioButtonInner: { height: 12, width: 12, borderRadius: 6, backgroundColor: Colors.primary },
+  container: { 
+    padding: 30, 
+    paddingBottom: 10 
+  },
+  row: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' 
+  },
+  
+  label: { 
+    color: Colors.text, 
+    marginBottom: 8, 
+    fontSize: 14, 
+    fontWeight: '500' 
+  },
+  subLabel: { 
+    color: Colors.grey, 
+    marginBottom: 4, 
+    fontSize: 12 
+  },
+  sectionTitle: { 
+    color: Colors.text, 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginTop: 10, 
+    marginBottom: 5 
+  },
+  inputContainer: { 
+    marginBottom: 15, 
+    width: '100%' 
+  },
+  
+  selectorButton: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 50,
+  },
+  selectorText: { fontSize: 14, color: Colors.text },
+
+  dateInput: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50,
+  },
+  webDateInputContainer: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    height: 50,
+    overflow: 'hidden',
+  },
+  modalOverlay: { 
+    flex: 1, 
+    justifyContent: 'flex-end', 
+    backgroundColor: 'rgba(0,0,0,0.5)' 
+  },
+  modalContent: { 
+    backgroundColor: '#fff', 
+    borderTopLeftRadius: 25, 
+    borderTopRightRadius: 25, 
+    padding: 25, 
+    paddingBottom: 40 
+  },
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    marginBottom: 15, 
+    textAlign: 'center', 
+    color: Colors.text 
+  },
+  modalOption: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingVertical: 15, borderBottomWidth: 1, 
+    borderBottomColor: '#f0f0f0' 
+  },
+  modalOptionText: { 
+    fontSize: 16, 
+    color: Colors.text 
+  },
 });
