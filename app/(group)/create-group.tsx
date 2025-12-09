@@ -2,7 +2,7 @@ import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
-import { careGroupApi, patientsApi } from '@/services/api';
+import { careGroupApi } from '@/services/api';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -37,22 +37,14 @@ export default function CreateGroupScreen() {
 
     try {
       // CREAR GRUPO
-      const groupResponse = await careGroupApi.create({
+      await careGroupApi.create({
         group_name: groupName,
         photo_url: null,
         patient_names: patientNames,
-      });
-
-      const care_group_id = groupResponse.data?.group?.care_group_id ?? groupResponse.data?.care_group_id;
-      
-      // CREAR PACIENTE ASOCIADO
-      await patientsApi.create({
-        care_group_id,
-        names: patientNames,
-        surnames: patientSurnames || null,
-        cellphone: patientCellphone || null,
-        telephone: patientTelephone || null,
-        address: patientAddress || null,
+        patient_surnames: patientSurnames || null,   
+        patient_cellphone: patientCellphone || null, 
+        patient_telephone: patientTelephone || null, 
+        patient_address: patientAddress || null      
       });
 
       Toast.show({
@@ -61,7 +53,7 @@ export default function CreateGroupScreen() {
         text2: 'Grupo y paciente creados correctamente.',
       });
 
-      router.replace('/(tabs)');
+      router.replace('/select-group');
 
     } catch (error: any) {
         console.log(error);

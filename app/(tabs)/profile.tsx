@@ -168,11 +168,11 @@ export default function ProfileScreen() {
               onPress={() => router.push('../medical-tests')}
             />
             
-            <ProfileLink
+            {/*<ProfileLink
               title="Encargados / Contactos"
               icon="people-outline"
               onPress={() => router.push('/(tabs)/contacts')} // Si ya tienes esta ruta en tabs
-            />
+            />*/}
           </View>
 
           <View style={{ height: 60 }} />
