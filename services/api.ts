@@ -206,6 +206,31 @@ export const patientsApi = {
   getByGroup: (care_group_id: number) => {
     return apiClient.get(`/patients/by-group/${care_group_id}`);
   },
+
+  getAll: () => {
+    return apiClient.get('/patients');
+  },
+
+};
+
+export const medicationApi = {
+    // Obtener lista por ID de paciente
+    getAll: (patientId: number) => {
+        return apiClient.get(`/medications?patient_id=${patientId}`);
+    },
+    // Obtener uno solo (para editar)
+    getOne: (medicationId: string | number) => {
+        return apiClient.get(`/medications/${medicationId}`);
+    },
+    create: (data: { patient_id: number; name: string; description?: string }) => {
+        return apiClient.post('/medications', data);
+    },
+    update: (medicationId: string | number, data: { name?: string; description?: string }) => {
+        return apiClient.put(`/medications/${medicationId}`, data);
+    },
+    delete: (medicationId: string | number) => {
+        return apiClient.delete(`/medications/${medicationId}`);
+    }
 };
 
 export default apiClient;

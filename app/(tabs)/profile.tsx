@@ -1,9 +1,11 @@
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
+import { groupsApi, patientsApi } from '@/services/api'; // <--- Importamos las APIs
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   ScrollView,
@@ -12,6 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+// --- COMPONENTES AUXILIARES ---
 
 type ProfileLinkProps = {
   title: string;
@@ -31,38 +36,87 @@ const ProfileLink = ({ title, icon, onPress }: ProfileLinkProps) => (
   </TouchableOpacity>
 );
 
-function ProfileCard() {
+// Modificamos el ProfileCard para recibir datos
+function ProfileCard({ patient, loading }: { patient: any, loading: boolean }) {
+  if (loading) {
+    return (
+        <View style={[styles.profileCard, { justifyContent: 'center', height: 120 }]}>
+            <ActivityIndicator color={Colors.primaryDark} />
+        </View>
+    );
+  }
+
+  if (!patient) {
+      return (
+        <View style={styles.profileCard}>
+            <Text>No se encontró información del paciente.</Text>
+        </View>
+      );
+  }
+
   return (
     <View style={styles.profileCard}>
       <Image
-        source={require('../../assets/images/avatar2.png')}
+        source={require('../../assets/images/avatar2.png')} // Podrías poner una foto dinámica si existiera
         style={styles.avatar}
       />
       <View style={styles.profileInfo}>
-        <Text style={styles.profileName}>Matías Medina</Text>
-        <Text style={styles.profileMeta}>82 años</Text>
+        <Text style={styles.profileName}>
+            {patient.names} {patient.surnames}
+        </Text>
+        
+        {/* Como no tenemos edad en la BD, mostramos el celular o dirección */}
+        <Text style={styles.profileMeta}>
+            {patient.cellphone || patient.address || 'Sin información de contacto'}
+        </Text>
 
+        {/* Estos datos siguen siendo estáticos (Mocks) por ahora */}
         <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>85%</Text>
-            <Text style={styles.statLabel}>Bienestar</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>Tareas</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>5</Text>
-            <Text style={styles.statLabel}>Med</Text>
-          </View>
+          
         </View>
       </View>
     </View>
   );
 }
 
+// --- PANTALLA PRINCIPAL ---
+
 export default function ProfileScreen() {
   const router = useRouter();
+  const [patient, setPatient] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar datos cada vez que la pantalla gana foco
+  useFocusEffect(
+    useCallback(() => {
+      fetchPatientData();
+    }, [])
+  );
+
+  const fetchPatientData = async () => {
+    try {
+        setLoading(true);
+        // 1. Obtener grupos para saber cual es el activo (Usamos el primero por defecto)
+        const groupsRes = await groupsApi.getMyGroups();
+        
+        if (groupsRes.data && groupsRes.data.length > 0) {
+            const activeGroupId = groupsRes.data[0].id; // Ojo: Aquí deberías usar el ID seleccionado globalmente si lo tuvieras
+
+            // 2. Obtener todos los pacientes y filtrar
+            const patientsRes = await patientsApi.getAll();
+            const foundPatient = patientsRes.data.find((p: any) => p.care_group_id == activeGroupId);
+
+            if (foundPatient) {
+                setPatient(foundPatient);
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching patient profile:", error);
+        Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudieron cargar los datos del paciente.' });
+    } finally {
+        setLoading(false);
+    }
+  };
 
   return (
     <CustomSafeArea withTabBar>
@@ -72,14 +126,11 @@ export default function ProfileScreen() {
         style={styles.backgroundImage}
       >
         <View style={styles.overlay} />
-        {/*
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Perfil del Paciente</Text>
-        </View>
-        */}
         
         <ScrollView contentContainerStyle={styles.container}>
-          <ProfileCard />
+          
+          {/* Tarjeta con datos reales */}
+          <ProfileCard patient={patient} loading={loading} />
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Información</Text>
@@ -89,6 +140,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.links}>
+            {/* ENLACE FUNCIONAL A MEDICAMENTOS */}
             <ProfileLink
               title="Medicamentos"
               icon="medkit-outline"
@@ -99,15 +151,17 @@ export default function ProfileScreen() {
               icon="calendar"
               onPress={() => router.push('../prescriptions')}
             />
+            
             <ProfileLink
               title="Exámenes Médicos"
               icon="document-text-outline"
               onPress={() => router.push('../medical-tests')}
             />
+            
             <ProfileLink
               title="Encargados / Contactos"
               icon="people-outline"
-              onPress={() => router.push('./contacts')}
+              onPress={() => router.push('/(tabs)/contacts')} // Si ya tienes esta ruta en tabs
             />
           </View>
 
@@ -128,27 +182,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 8,
   },
-
-  headerContainer: {
-    padding: 20,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0)',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 36,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  /*headerTitle: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 24,
-    color: Colors.primaryDark2,
-    textAlign: 'center',
-  },
-  */
 
   profileCard: {
     flexDirection: 'row',
@@ -174,12 +207,12 @@ const styles = StyleSheet.create({
   profileInfo: {
     marginLeft: 14,
     flex: 1,
-    
   },
   profileName: {
     fontFamily: 'Poppins-SemiBold',
-    fontSize: 26,
+    fontSize: 22, // Ajustado un poco por si el nombre es largo
     color: Colors.primaryDark2,
+    flexWrap: 'wrap',
   },
   profileMeta: {
     fontFamily: 'Poppins-Regular',
@@ -200,18 +233,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
     alignItems: 'center',
-    minWidth: 70,
+    minWidth: 60,
   },
   statValue: {
     fontFamily: 'Poppins-Bold',
-    fontSize: 18,
+    fontSize: 16,
     color: Colors.white,
   },
   statLabel: {
     fontFamily: 'Poppins-Regular',
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 1)',
-
   },
 
   section: {
@@ -229,6 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.9)',
     marginTop: 4,
+    textAlign: 'center'
   },
 
   links: {

@@ -18,6 +18,7 @@ export default function RootLayout() {
               <Stack.Screen name="add-task" />
               
               <Stack.Screen name="medications" />
+              <Stack.Screen name="add-medication" />
               <Stack.Screen name="edit-medication" />
               <Stack.Screen name="medical-tests" />
               <Stack.Screen name="edit-medical-test" />
