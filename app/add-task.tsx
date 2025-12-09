@@ -4,7 +4,7 @@ import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
-import { groupsApi } from '@/services/api';
+import { groupsApi, tasksApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
@@ -129,6 +129,7 @@ interface GroupMember {
 
 export default function AddTaskScreen() {
   const router = useRouter();
+  
   const [loading, setLoading] = useState(false);
   
   const { groupId, hydrated } = useSelectedGroup();
@@ -187,7 +188,7 @@ export default function AddTaskScreen() {
     }
   }, [hydrated, groupId]);
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!title.trim()) {
         Toast.show({ type: 'error', text1: 'Falta información', text2: 'Debes escribir un título para la tarea.' });
         return;
@@ -204,19 +205,36 @@ export default function AddTaskScreen() {
         return;
     }
 
+    //  FIX THE NAMES to match your PHP Controller
     const payload = {
+        care_group_id: Number(groupId),     // <--- REQUIRED by Backend
         title,
         description,
-        assigned_to: assignedTo?.user_id || "",
+        frequency: repetition,              // <--- Renamed (was repetition)
         category,
-        repetition,
-        start_time: finalStart.toISOString(),
+        begin_time: finalStart.toISOString(), // <--- Renamed (was start_time)
         end_time: finalEnd.toISOString(),
+        // Note: 'assigned_to' is not yet handled by Backend 'store' function, 
+        // but we can send it for now.
+        // assigned_to: assignedTo?.user_id || null 
     };
-
     console.log("Enviando Tarea:", payload);
-    Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
-    router.replace('/(tabs)/calendar');
+    try {
+        // 4. ACTUALLY CALL THE API
+        await tasksApi.create(payload);
+        
+        Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
+        
+        // Return to calendar
+        router.replace('/(tabs)/calendar');
+    } catch (error: any) {
+        console.error("Error creating task:", error.response?.data || error);
+        Toast.show({ 
+            type: 'error', 
+            text1: 'Error al guardar', 
+            text2: 'No se pudo crear la tarea en el servidor.' 
+        });
+    }
   };
 
   const renderSelector = (label: string, value: string, icon: keyof typeof Ionicons.glyphMap, onPress: () => void) => (

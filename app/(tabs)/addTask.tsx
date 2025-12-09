@@ -1,9 +1,514 @@
-import { Text, View } from "react-native";
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import StyledButton from '@/components/ui/StyledButton';
+import StyledTextInput from '@/components/ui/StyledTextInput';
+import Colors from '@/constants/Colors';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { groupsApi, tasksApi } from '@/services/api';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { createElement, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ImageBackground, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
-export default function Tab() {
+const categories = ['Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
+const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
+
+// --- DATE HELPERS ---
+const formatDateForWeb = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const formatTimeForWeb = (date: Date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+
+const PlatformDatePicker = ({ 
+  value, 
+  onChange, 
+  mode = 'date', 
+}: { 
+  value: Date; 
+  onChange: (event: any, date?: Date) => void; 
+  mode?: 'date' | 'time'; 
+}) => {
+  const [showMobilePicker, setShowMobilePicker] = useState(false);
+
+  const handleMobileChange = (event: any, selectedDate?: Date) => {
+    setShowMobilePicker(false);
+    if (selectedDate) onChange(event, selectedDate);
+  };
+
+  const handleWebChange = (e: any) => {
+    const stringVal = e.target.value; 
+    if(!stringVal) return;
+
+    const newDate = new Date(value); 
+
+    if (mode === 'date') {
+        const [y, m, d] = stringVal.split('-').map(Number);
+        newDate.setFullYear(y);
+        newDate.setMonth(m - 1);
+        newDate.setDate(d);
+    } else {
+        const [h, m] = stringVal.split(':').map(Number);
+        newDate.setHours(h);
+        newDate.setMinutes(m);
+    }
+    onChange(e, newDate);
+  };
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.webDateInputContainer}>
+        {createElement('input', {
+            type: mode === 'time' ? 'time' : 'date',
+            value: mode === 'date' ? formatDateForWeb(value) : formatTimeForWeb(value),
+            onChange: handleWebChange,
+            style: {
+                border: 'none',
+                background: 'transparent',
+                width: '100%',
+                height: '100%',
+                fontSize: 16,
+                color: Colors.text,
+                fontFamily: 'Poppins-Regular',
+                outline: 'none' 
+            }
+        })}
+      </View>
+    );
+  }
+
   return (
     <View>
-      <Text>No sé qué más poner</Text>
+      <TouchableOpacity 
+        style={styles.dateInput} 
+        onPress={() => setShowMobilePicker(true)}
+      >
+        <Ionicons 
+          name={mode === 'time' ? "time-outline" : "calendar-outline"} 
+          size={20} 
+          color={Colors.primary} 
+        />
+        <Text style={{ marginLeft: 10, color: Colors.text }}>
+          {mode === 'date' 
+            ? value.toLocaleDateString() 
+            : value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        </Text>
+      </TouchableOpacity>
+
+      {showMobilePicker && (
+        <DateTimePicker
+          value={value}
+          mode={mode}
+          is24Hour={true}
+          display="default"
+          onChange={handleMobileChange}
+        />
+      )}
     </View>
   );
+};
+
+interface GroupMember {
+  user_id: string;
+  names: string;
+  surnames: string;
 }
+
+export default function AddTaskScreen() {
+  const router = useRouter();
+  
+  // 1. CHECK IF EDITING
+  const params = useLocalSearchParams();
+  const editMode = params.mode === 'edit';
+  const taskId = params.taskId ? Number(params.taskId) : null;
+  
+  const [loading, setLoading] = useState(false);
+  
+  const { groupId, hydrated } = useSelectedGroup();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [assignedTo, setAssignedTo] = useState<GroupMember>();
+  const [category, setCategory] = useState(categories[0]);
+  const [repetition, setRepetition] = useState(repetitionOptions[0]);
+
+  const [startDate, setStartDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date()); 
+  const [endDate, setEndDate] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date(new Date().setHours(new Date().getHours() + 1))); 
+
+  const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'repetition'>('none');
+
+  // --- LOAD GROUP MEMBERS ---
+  const handleGroupMembers = async () => {
+    if(!groupId) return;
+    try {
+      const response = await groupsApi.getMembers(Number(groupId));
+      setGroupMembers(response.data);
+      if (response.data.length > 0 && !editMode) {
+        setAssignedTo(response.data[0]);
+      }
+    } catch (error: any){
+      console.error("Error al intentar recuperar los miembros", error);
+    }
+  }
+
+  // --- 2. LOAD TASK DATA IF EDITING ---
+  const loadTaskData = async (id: number) => {
+    setLoading(true);
+    try {
+      // Ensure 'tasksApi.read(id)' exists in your api.ts
+      const response = await tasksApi.read(id); 
+      const task = response.data;
+      
+      // Fill Form
+      setTitle(task.title);
+      setDescription(task.description || '');
+      setCategory(task.category || categories[0]);
+      setRepetition(task.frequency || repetitionOptions[0]);
+      
+      // --- FIX FOR ASSIGNED USER ---
+      // Check if the task has assigned users coming from the backend
+      if (task.assignedUsers && task.assignedUsers.length > 0) {
+        // Find this user in our local 'groupMembers' list to ensure the object matches
+        // (We need the groupMembers list loaded first! This might be a race condition)
+        const foundUser = task.assignedUsers[0]; // Grab the first one
+        setAssignedTo(foundUser);
+      }
+      // ----
+
+      // Parse dates
+      const start = new Date(task.begin_time);
+      setStartDate(start);
+      setStartTime(start);
+      
+      if(task.end_time) {
+        const end = new Date(task.end_time);
+        setEndDate(end);
+        setEndTime(end);
+      }
+      
+    } catch (error) {
+      console.error("Error loading task", error);
+      Alert.alert("Error", "No se pudo cargar la tarea para editar.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if(hydrated && !groupId){
+      router.replace("/select-group");
+    }
+    if (hydrated && groupId){
+      handleGroupMembers();
+    }
+  }, [hydrated, groupId]);
+
+  useEffect(() => {
+    if (editMode && taskId) {
+      loadTaskData(taskId);
+    }
+  }, [editMode, taskId]);
+
+  // --- 3. UNIFIED SAVE FUNCTION ---
+  const handleSaveTask = async () => {
+    if (!title.trim()) {
+        Toast.show({ type: 'error', text1: 'Falta información', text2: 'Debes escribir un título.' });
+        return;
+    }
+
+    const finalStart = new Date(startDate);
+    finalStart.setHours(startTime.getHours(), startTime.getMinutes());
+
+    const finalEnd = new Date(endDate);
+    finalEnd.setHours(endTime.getHours(), endTime.getMinutes());
+
+    if (finalEnd < finalStart) {
+        Toast.show({ type: 'info', text1: 'Cuidado', text2: 'La fecha de término es anterior al inicio.' });
+        return;
+    }
+
+    const payload = {
+        care_group_id: Number(groupId),
+        title,
+        description,
+        frequency: repetition,
+        category,
+        begin_time: finalStart.toISOString(),
+        end_time: finalEnd.toISOString(),
+        assigned_to: assignedTo?.user_id || null 
+    };
+
+    console.log("Enviando Tarea:", payload);
+    setLoading(true);
+
+    try {
+        if (editMode && taskId) {
+           // UPDATE
+           await tasksApi.update(taskId, payload);
+           Toast.show({ type: 'success', text1: 'Actualizado', text2: 'Tarea modificada correctamente.' });
+        } else {
+           // CREATE
+           await tasksApi.create(payload);
+           Toast.show({ type: 'success', text1: 'Creado', text2: 'Tarea agendada correctamente.' });
+        }
+        
+        router.replace('/(tabs)/calendar');
+        // Clear params to prevent stale state if navigated back immediately
+        router.setParams({ mode: '', taskId: '' });
+
+    } catch (error: any) {
+        console.error("Error saving task:", error.response?.data || error);
+        Toast.show({ 
+            type: 'error', 
+            text1: 'Error al guardar', 
+            text2: 'No se pudo guardar la tarea en el servidor.' 
+        });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSelector = (label: string, value: string, icon: keyof typeof Ionicons.glyphMap, onPress: () => void) => (
+    <View style={styles.inputContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <TouchableOpacity style={styles.selectorButton} onPress={onPress}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Ionicons name={icon} size={20} color={Colors.primary} />
+                <Text style={styles.selectorText}>{value}</Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color={Colors.grey} />
+        </TouchableOpacity>
+    </View>
+  );
+
+  if (loading || !hydrated){
+    return (
+      <CustomSafeArea>
+        <ImageBackground source={require('../../assets/images/background2.jpg')} style={styles.backgroundImage}>
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color={Colors.primaryDark} />
+          </View>
+        </ImageBackground>
+      </CustomSafeArea>
+    )
+  }
+
+  return (
+    <CustomSafeArea>
+        <ScreenHeader title={editMode ? "Editar Tarea" : "Nueva Tarea"} />
+        
+        <ScrollView contentContainerStyle={styles.container}>
+          
+          <StyledTextInput 
+              label="Tarea" 
+              placeholder="Ej: Tomar pastilla..." 
+              value={title}
+              onChangeText={setTitle}
+          />
+
+          <StyledTextInput 
+              label="Descripción" 
+              placeholder="Detalles adicionales..." 
+              value={description}
+              onChangeText={setDescription}
+              multiline
+          />
+
+        <View style={styles.row}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+                {renderSelector("Asignado a",
+                  assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Selecciona un miembro", 
+                  "person-outline", () => setActiveModal('assign'))}
+            </View>
+            <View style={{ flex: 1 }}>
+                {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
+            </View>
+        </View>
+
+          <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+              </View>
+          </View>
+
+          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+              </View>
+          </View>
+
+          <View style={{ marginTop: 10 }}>
+              {renderSelector("Repetición", repetition, "repeat-outline", () => setActiveModal('repetition'))}
+          </View>
+
+          <View style={{ marginTop: 10 }}>
+              {/* UPDATED BUTTON */}
+              <StyledButton 
+                title={editMode ? "Guardar Cambios" : "Agendar Tarea"} 
+                onPress={handleSaveTask} 
+              />
+          </View>
+
+        </ScrollView>
+
+      {/* MODALES */}
+      <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+                {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
+            </Text>
+            
+            <ScrollView style={{ maxHeight: 300 }}>
+                {/* ... existing modal logic ... */}
+                {activeModal === 'assign' && groupMembers && groupMembers.map((m) => (
+                    <TouchableOpacity key={m.user_id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
+                        {assignedTo?.user_id === m.user_id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'category' && categories.map((c, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{c}</Text>
+                        {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{r}</Text>
+                        {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+    </CustomSafeArea>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 0, 
+    padding: 30, 
+    paddingBottom: 10 
+  },
+  row: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' 
+  },
+  
+  label: { 
+    color: Colors.text, 
+    marginBottom: 8, 
+    fontSize: 14, 
+    fontWeight: '500' 
+  },
+  subLabel: { 
+    color: Colors.grey, 
+    marginBottom: 4, 
+    fontSize: 12 
+  },
+  sectionTitle: { 
+    color: Colors.text, 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginTop: 10, 
+    marginBottom: 5 
+  },
+  inputContainer: { 
+    marginBottom: 15, 
+    width: '100%' 
+  },
+  
+  selectorButton: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 50,
+  },
+  selectorText: { fontSize: 14, color: Colors.text },
+
+  dateInput: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50,
+  },
+  webDateInputContainer: {
+    backgroundColor: Colors.white,
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    height: 50,
+    overflow: 'hidden',
+  },
+  modalOverlay: { 
+    flex: 1, 
+    justifyContent: 'flex-end', 
+    backgroundColor: 'rgba(0,0,0,0.5)' 
+  },
+  modalContent: { 
+    backgroundColor: '#fff', 
+    borderTopLeftRadius: 25, 
+    borderTopRightRadius: 25, 
+    padding: 25, 
+    paddingBottom: 40 
+  },
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    marginBottom: 10, 
+    textAlign: 'center', 
+    color: Colors.text 
+  },
+  modalOption: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingVertical: 15, borderBottomWidth: 1, 
+    borderBottomColor: '#f0f0f0' 
+  },
+  modalOptionText: { 
+    fontSize: 16, 
+    color: Colors.text 
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+  },
+});
