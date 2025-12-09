@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { createElement, useState } from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 // Dejo ejemplos para categorias, Asignaciones y Formatos de repetición
@@ -190,106 +190,113 @@ export default function AddTaskScreen() {
 
   return (
     <CustomSafeArea>
-      <ScreenHeader title="Nueva Tarea" />
-      
-      <ScrollView contentContainerStyle={styles.container}>
+      <ImageBackground
+              source={require('@/assets/images/background2.jpg')}
+              resizeMode="cover"
+              style={styles.backgroundImage}
+      >
+        <ScreenHeader title="Nueva Tarea" />
         
-        <StyledTextInput 
-            label="Tarea" 
-            placeholder="Ej: Tomar pastilla..." 
-            value={title}
-            onChangeText={setTitle}
-        />
+        <ScrollView contentContainerStyle={styles.container}>
+          
+          <StyledTextInput 
+              label="Tarea" 
+              placeholder="Ej: Tomar pastilla..." 
+              value={title}
+              onChangeText={setTitle}
+          />
 
-        <StyledTextInput 
-            label="Descripción" 
-            placeholder="Detalles adicionales..." 
-            value={description}
-            onChangeText={setDescription}
-            multiline
-        />
+          <StyledTextInput 
+              label="Descripción" 
+              placeholder="Detalles adicionales..." 
+              value={description}
+              onChangeText={setDescription}
+              multiline
+          />
 
-        <View style={styles.row}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-                {renderSelector("Asignado a", assignedTo.name.split(' ')[0], "person-outline", () => setActiveModal('assign'))}
-            </View>
-            <View style={{ flex: 1 }}>
-                {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
-            </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
-        <View style={styles.row}>
-            <View style={{ flex: 1.5, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Fecha</Text>
-                <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
-            </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.subLabel}>Hora</Text>
-                <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
-            </View>
-        </View>
-
-        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
-        <View style={styles.row}>
-            <View style={{ flex: 1.5, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Fecha</Text>
-                <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
-            </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.subLabel}>Hora</Text>
-                <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
-            </View>
-        </View>
-
-        <View style={{ marginTop: 10 }}>
-            {renderSelector("Repetición", repetition, "repeat-outline", () => setActiveModal('repetition'))}
-        </View>
-
-        <View style={{ marginTop: 10 }}>
-            <StyledButton title="Add Project" onPress={handleCreateTask} />
-        </View>
-
-      </ScrollView>
-
-      {/* MODALES */}
-      <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-                {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
-            </Text>
-            
-            <ScrollView style={{ maxHeight: 300 }}>
-                {activeModal === 'assign' && mockMembers.map((m) => (
-                    <TouchableOpacity key={m.id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{m.name}</Text>
-                        {assignedTo.id === m.id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
-                {activeModal === 'category' && mockCategories.map((c, i) => (
-                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{c}</Text>
-                        {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
-                {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
-                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{r}</Text>
-                        {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+          <View style={styles.row}>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                  {renderSelector("Asignado a", assignedTo.name.split(' ')[0], "person-outline", () => setActiveModal('assign'))}
+              </View>
+              <View style={{ flex: 1 }}>
+                  {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
+              </View>
           </View>
-        </TouchableOpacity>
-      </Modal>
 
+          <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+              </View>
+          </View>
+
+          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+              </View>
+          </View>
+
+          <View style={{ marginTop: 10 }}>
+              {renderSelector("Repetición", repetition, "repeat-outline", () => setActiveModal('repetition'))}
+          </View>
+
+          <View style={{ marginTop: 10 }}>
+              <StyledButton title="Add Project" onPress={handleCreateTask} />
+          </View>
+
+        </ScrollView>
+
+        {/* MODALES */}
+        <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                  {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
+              </Text>
+              
+              <ScrollView style={{ maxHeight: 300 }}>
+                  {activeModal === 'assign' && mockMembers.map((m) => (
+                      <TouchableOpacity key={m.id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
+                          <Text style={styles.modalOptionText}>{m.name}</Text>
+                          {assignedTo.id === m.id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                      </TouchableOpacity>
+                  ))}
+                  {activeModal === 'category' && mockCategories.map((c, i) => (
+                      <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
+                          <Text style={styles.modalOptionText}>{c}</Text>
+                          {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                      </TouchableOpacity>
+                  ))}
+                  {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
+                      <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
+                          <Text style={styles.modalOptionText}>{r}</Text>
+                          {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                      </TouchableOpacity>
+                  ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </ImageBackground>
     </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
+  backgroundImage: { flex: 1, width: '100%'},
+  container: {
+    marginTop: 0, 
     padding: 30, 
     paddingBottom: 10 
   },
@@ -366,7 +373,7 @@ const styles = StyleSheet.create({
   modalTitle: { 
     fontSize: 18, 
     fontWeight: 'bold', 
-    marginBottom: 15, 
+    marginBottom: 10, 
     textAlign: 'center', 
     color: Colors.text 
   },
