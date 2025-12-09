@@ -13,7 +13,56 @@ import { ActivityIndicator, Alert, ImageBackground, Modal, Platform, ScrollView,
 import Toast from 'react-native-toast-message';
 
 const categories = ['Sin categoría','Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
-const frequencyOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
+const frequencyOptions = [
+  {
+    text: 'No se repite',
+    value: 0
+  },
+  {
+    text: 'Todos los dias',
+    value: 1
+  },
+  {
+    text: 'Todas las semanas',
+    value: 2
+  },
+  {
+    text: 'Todos los meses',
+    value: 3
+  }
+];
+
+function addDays(d: Date, days: number) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + days);
+  return r;
+}
+
+function addWeeks(d: Date, weeks: number) {
+  return addDays(d, weeks * 7);
+}
+
+function addMonths(d: Date, months: number) {
+  const r = new Date(d);
+  const desiredMonth = r.getMonth() + months;
+  r.setMonth(desiredMonth);
+  return r;
+}
+
+const adjustEndDateForFrequency = (baseStart: Date, freqValue: number, currentEnd?: Date) => {
+  if (freqValue === 0) {
+    return currentEnd ?? new Date(baseStart);
+  }
+
+  let minEnd: Date;
+  if (freqValue === 1) minEnd = addDays(baseStart, 1);
+  else if (freqValue === 2) minEnd = addWeeks(baseStart, 1);
+  else if (freqValue === 3) minEnd = addMonths(baseStart, 1);
+  else minEnd = new Date(baseStart);
+
+  if (!currentEnd || currentEnd < minEnd) return minEnd;
+  return currentEnd;
+};
 
 // Los inputs HTML necesitan strings formato "YYYY-MM-DD" y "HH:MM"
 const formatDateForWeb = (date: Date) => {
@@ -138,14 +187,14 @@ export default function AddTaskScreen() {
   
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
 
-  const [assignedTo, setAssignedTo] = useState<GroupMember>();
+  const [assignedTo, setAssignedTo] = useState<GroupMember | undefined>(undefined);
   const [category, setCategory] = useState(categories[0]);
   const [frequency, setfrequency] = useState(frequencyOptions[0]);
 
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date()); 
-  const [endDate, setEndDate] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date(new Date().setHours(new Date().getHours() + 1))); 
+  const [endDate, setEndDate] = useState(new Date());
 
   const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'frequency'>('none');
 
@@ -182,6 +231,16 @@ export default function AddTaskScreen() {
     }
   }, [hydrated, groupId]);
 
+  useEffect(() => {
+    if(!hydrated){
+      return;
+    }
+    const newEnd = adjustEndDateForFrequency(startDate, frequency.value, endDate);
+    if(newEnd.getTime() !== endDate.getTime()){
+      setEndDate(newEnd);
+    }
+  }, [frequency, startDate, hydrated]);
+
   const handleCreateTask = async () => {
     if(!groupId){
       Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
@@ -194,15 +253,22 @@ export default function AddTaskScreen() {
     }
 
     const finalStart = new Date(startDate);
-    finalStart.setHours(startTime.getHours(), startTime.getMinutes());
+    finalStart.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
 
-    const finalEnd = new Date(endDate);
-    finalEnd.setHours(endTime.getHours(), endTime.getMinutes());
+    const finalEnd = new Date(startDate);
+    finalEnd.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
 
     if (finalEnd < finalStart) {
         Toast.show({ type: 'info', text1: 'Cuidado', text2: 'La fecha de término es anterior al inicio.' });
         return;
     }
+
+    const loopEndDateISO = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate(),
+      0, 0, 0, 0
+    ).toISOString(); // e.g. "2025-12-15T00:00:00.000Z"
 
     const payload = {
       care_group_id: Number(groupId),
@@ -210,13 +276,17 @@ export default function AddTaskScreen() {
       description,
       assigned_to: assignedTo?.user_id ?? null,
       category,
-      frequency,
+      frequency: frequency.value.toString(),
       begin_time: finalStart.toISOString(),
       end_time: finalEnd.toISOString(),
+      loop_end_date: loopEndDateISO
     };
+
+    console.log("Payload: ", payload);
 
     try {
       const response = await tasksApi.create(payload);
+      console.log("Response: ", response.data);
 
       console.log("Tarea creada exitosamente");
       Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
@@ -285,33 +355,35 @@ export default function AddTaskScreen() {
             </View>
         </View>
 
-          <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
-          <View style={styles.row}>
-              <View style={{ flex: 1.5, marginRight: 10 }}>
-                  <Text style={styles.subLabel}>Fecha</Text>
-                  <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
-              </View>
-              <View style={{ flex: 1 }}>
-                  <Text style={styles.subLabel}>Hora</Text>
-                  <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
-              </View>
-          </View>
-
-          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
-          <View style={styles.row}>
-              <View style={{ flex: 1.5, marginRight: 10 }}>
-                  <Text style={styles.subLabel}>Fecha</Text>
-                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
-              </View>
-              <View style={{ flex: 1 }}>
-                  <Text style={styles.subLabel}>Hora</Text>
-                  <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
-              </View>
-          </View>
+        <Text style={styles.sectionTitle}>Fecha y rango horario</Text>
+        <View style={styles.row}>
+            <View style={{ flex: 1.5, marginRight: 10 }}>
+                <Text style={styles.subLabel}>Fecha</Text>
+                <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+            </View>
+            <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.subLabel}>Hora de inicio</Text>
+                <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.subLabel}>Hora de término</Text>
+                <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+            </View>
+        </View>
 
         <View style={{ marginTop: 10 }}>
-            {renderSelector("Repetición", frequency, "repeat-outline", () => setActiveModal('frequency'))}
+            {renderSelector("Frecuencia", frequency.text, "repeat-outline", () => setActiveModal('frequency'))}
         </View>
+
+        {frequency.value !== 0 &&
+        (<>
+          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Repetir hasta</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+              </View>
+          </View>
+        </>)}
 
         <View style={{ marginTop: 10 }}>
             <StyledButton title="Agregar tarea" onPress={handleCreateTask} />
@@ -361,9 +433,9 @@ export default function AddTaskScreen() {
                         {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
                     </TouchableOpacity>
                 ))}
-                {activeModal === 'frequency' && frequencyOptions.map((r, i) => (
-                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setfrequency(r); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{r}</Text>
+                {activeModal === 'frequency' && frequencyOptions.map((r) => (
+                    <TouchableOpacity key={r.value} style={styles.modalOption} onPress={() => { setfrequency(r); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{r.text}</Text>
                         {frequency === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
                     </TouchableOpacity>
                 ))}
