@@ -1,40 +1,42 @@
-import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import Colors from '@/constants/Colors';
+import { useEditItem } from '@/context/EditContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const mockMedications = [
-  { id: 'med1', name: 'Metformina', schedule: 'Todos los dias 8:00 AM - 12:00PM' },
-  { id: 'med2', name: 'Losartán', schedule: 'Todos los dias 10:00 AM' },
+  { id: 'med1', name: 'Metformina', description: 'Todos los dias 8:00 AM - 12:00PM' },
+  { id: 'med2', name: 'Losartán', description: 'Todos los dias 10:00 AM' },
 ];
 
 export default function MedicationsScreen() {
   const router = useRouter();
+  const { setSelectedItem } = useEditItem();
+
+  const handleEditMedication = (med: any) => {
+    setSelectedItem(med);
+    router.push(`./edit-medication?id=${med.id}`);
+  }
+
   return (
-    <CustomSafeArea>
-      <ImageBackground
-              source={require('@/assets/images/background2.jpg')}
-              resizeMode="cover"
-              style={styles.backgroundImage}
-      >
-        <ScreenHeader title="Medicamentos" />
-        <ScrollView contentContainerStyle={styles.container}>
-          {mockMedications.map(med => (
-            <View key={med.id} style={styles.card}>
-              <View>
-                <Text style={styles.medName}>{med.name}</Text>
-                <Text style={styles.medSchedule}>{med.schedule}</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push(`./edit-medication?id=${med.id}`)}>
-                <Ionicons name="create-outline" size={24} color={Colors.primary} />
-              </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea}>
+      <ScreenHeader title="Medicamentos"  has_add={true} actual_link="medication" />
+      <ScrollView contentContainerStyle={styles.container}>
+        {mockMedications.map(med => (
+          <View key={med.id} style={styles.card}>
+            <View>
+              <Text style={styles.medName}>{med.name}</Text>
+              <Text style={styles.medDescription}>{med.description}</Text>
             </View>
-          ))}
-        </ScrollView>
-      </ImageBackground>
-    </CustomSafeArea>
+            <TouchableOpacity onPress={() => handleEditMedication(med)}>
+              <Ionicons name="create-outline" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -44,5 +46,5 @@ const styles = StyleSheet.create({
   container: { padding: 20, gap: 15 },
   card: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: Colors.white, padding: 20, borderRadius: 15 },
   medName: { fontSize: 16, fontWeight: 'bold' },
-  medSchedule: { fontSize: 14, color: Colors.textLight, marginTop: 4 },
+  medDescription: { fontSize: 14, color: Colors.textLight, marginTop: 4 },
 });
