@@ -9,7 +9,7 @@ import { tasksApi } from '@/services/api';
 import { router } from 'expo-router';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalendarProvider } from 'react-native-calendars';
 import Toast from 'react-native-toast-message';
 
@@ -24,7 +24,6 @@ export default function DailyTasksScreen() {
 
   const handleTasks = async () => {
     if(!groupId){
-      Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
       Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
 
       setLoading(false);
@@ -39,8 +38,8 @@ export default function DailyTasksScreen() {
       console.log(response.data);
     }
     catch (error: any){
+      Toast.show({ type: 'error', text1: 'Error al intentar recuperar las tareas del grupo', text2: error.response?.data || error.message });
       console.error("Error al intentar recuperar las tareas del grupo:", error.response?.data || error.message);
-      Alert.alert("Error al intentar recuperar las tareas del grupo", error.response?.data || error.message)
     }
     finally {
       setLoading(false);
