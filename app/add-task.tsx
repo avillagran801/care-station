@@ -4,7 +4,7 @@ import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
-import { groupsApi } from '@/services/api';
+import { groupsApi, tasksApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
@@ -12,8 +12,8 @@ import React, { createElement, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-const categories = ['Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
-const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
+const categories = ['Sin categoría','Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
+const frequencyOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
 
 // Los inputs HTML necesitan strings formato "YYYY-MM-DD" y "HH:MM"
 const formatDateForWeb = (date: Date) => {
@@ -140,18 +140,17 @@ export default function AddTaskScreen() {
 
   const [assignedTo, setAssignedTo] = useState<GroupMember>();
   const [category, setCategory] = useState(categories[0]);
-  const [repetition, setRepetition] = useState(repetitionOptions[0]);
+  const [frequency, setfrequency] = useState(frequencyOptions[0]);
 
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date()); 
   const [endDate, setEndDate] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date(new Date().setHours(new Date().getHours() + 1))); 
 
-  const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'repetition'>('none');
+  const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'frequency'>('none');
 
   const handleGroupMembers = async () => {
     if(!groupId){
-      Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
       Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
 
       setLoading(false);
@@ -163,10 +162,6 @@ export default function AddTaskScreen() {
       const response = await groupsApi.getMembers(Number(groupId));
       setGroupMembers(response.data);
       console.log("Miembros del grupo recuperados");
-
-      if (response.data.length > 0) {
-        setAssignedTo(response.data[0]);
-      }
     }
     catch (error: any){
       console.error("Error al intentar recuperar los miembros del grupo:", error.response?.data || error.message);
@@ -187,7 +182,12 @@ export default function AddTaskScreen() {
     }
   }, [hydrated, groupId]);
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
+    if(!groupId){
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
+      return;
+    }
+
     if (!title.trim()) {
         Toast.show({ type: 'error', text1: 'Falta información', text2: 'Debes escribir un título para la tarea.' });
         return;
@@ -205,18 +205,27 @@ export default function AddTaskScreen() {
     }
 
     const payload = {
-        title,
-        description,
-        assigned_to: assignedTo?.user_id || "",
-        category,
-        repetition,
-        start_time: finalStart.toISOString(),
-        end_time: finalEnd.toISOString(),
+      care_group_id: Number(groupId),
+      title,
+      description,
+      assigned_to: assignedTo?.user_id ?? null,
+      category,
+      frequency,
+      begin_time: finalStart.toISOString(),
+      end_time: finalEnd.toISOString(),
     };
 
-    console.log("Enviando Tarea:", payload);
-    Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
-    router.replace('/(tabs)/calendar');
+    try {
+      const response = await tasksApi.create(payload);
+
+      console.log("Tarea creada exitosamente");
+      Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
+      router.replace('/(tabs)/calendar');
+    }
+    catch (error: any){
+      Toast.show({ type: 'error', text1: 'Error al intentar crear la tarea', text2: error.response?.data || error.message });
+      console.error("Error al intentar crear la tarea:", error.response?.data || error.message);
+    }
   };
 
   const renderSelector = (label: string, value: string, icon: keyof typeof Ionicons.glyphMap, onPress: () => void) => (
@@ -268,7 +277,7 @@ export default function AddTaskScreen() {
         <View style={styles.row}>
             <View style={{ flex: 1, marginRight: 10 }}>
                 {renderSelector("Asignado a",
-                  assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Selecciona un miembro", 
+                  assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Sin asignar", 
                   "person-outline", () => setActiveModal('assign'))}
             </View>
             <View style={{ flex: 1 }}>
@@ -300,13 +309,13 @@ export default function AddTaskScreen() {
               </View>
           </View>
 
-          <View style={{ marginTop: 10 }}>
-              {renderSelector("Repetición", repetition, "repeat-outline", () => setActiveModal('repetition'))}
-          </View>
+        <View style={{ marginTop: 10 }}>
+            {renderSelector("Repetición", frequency, "repeat-outline", () => setActiveModal('frequency'))}
+        </View>
 
-          <View style={{ marginTop: 10 }}>
-              <StyledButton title="Add Project" onPress={handleCreateTask} />
-          </View>
+        <View style={{ marginTop: 10 }}>
+            <StyledButton title="Agregar tarea" onPress={handleCreateTask} />
+        </View>
 
         </ScrollView>
 
@@ -319,22 +328,43 @@ export default function AddTaskScreen() {
             </Text>
             
             <ScrollView style={{ maxHeight: 300 }}>
-                {activeModal === 'assign' && groupMembers && groupMembers.map((m) => (
-                    <TouchableOpacity key={m.user_id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
-                        {assignedTo?.user_id === m.user_id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
+              {activeModal === 'assign' && (
+                <>
+                  {/* Opción: Sin asignar */}
+                  <TouchableOpacity 
+                      style={styles.modalOption} 
+                      onPress={() => { setAssignedTo(undefined); setActiveModal('none'); }}
+                  >
+                      <Text style={styles.modalOptionText}>Sin asignar</Text>
+                      {!assignedTo && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                  </TouchableOpacity>
+
+                  {/* Miembros */}
+                  {groupMembers.map((m) => (
+                      <TouchableOpacity 
+                          key={m.user_id} 
+                          style={styles.modalOption} 
+                          onPress={() => { setAssignedTo(m); setActiveModal('none'); }}
+                      >
+                          <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
+                          {assignedTo?.user_id === m.user_id && (
+                              <Ionicons name="checkmark" size={20} color={Colors.primary} />
+                          )}
+                      </TouchableOpacity>
+                  ))}
+                </>
+              )}
+
                 {activeModal === 'category' && categories.map((c, i) => (
                     <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
                         <Text style={styles.modalOptionText}>{c}</Text>
                         {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
                     </TouchableOpacity>
                 ))}
-                {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
-                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
+                {activeModal === 'frequency' && frequencyOptions.map((r, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setfrequency(r); setActiveModal('none'); }}>
                         <Text style={styles.modalOptionText}>{r}</Text>
-                        {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                        {frequency === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
                     </TouchableOpacity>
                 ))}
             </ScrollView>

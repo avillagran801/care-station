@@ -57,12 +57,10 @@ export default function HomeScreen() {
       const response = await tasksApi.listUpcomingByGroup(Number(groupId));
       setUpcomingEvents(response.data);
       console.log("Tareas del grupo recuperadas.");
-      console.log(response.data);
 
       const response2 = await patientsApi.getByGroup(Number(groupId));
       setPatient(response2.data);
       console.log("Información del paciente recuperada");
-      console.log(response2.data);
     }
     catch (error: any){
       console.error('Error cargando dashboard:', error);
