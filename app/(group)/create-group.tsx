@@ -115,8 +115,8 @@ export default function CreateGroupScreen() {
               />
 
               <StyledTextInput 
-                label="Celular del paciente" 
-                placeholder="+56 9 1234 5678" 
+                label="Teléfono fijo" 
+                placeholder="+56 1234567" 
                 keyboardType="phone-pad" 
                 value={patientCellphone}
                 onChangeText={setPatientCellphone}

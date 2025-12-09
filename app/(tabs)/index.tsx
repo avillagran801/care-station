@@ -27,7 +27,7 @@ interface Task {
   task_id: number;
   title: string;
   description?: string;
-  due_date?: string;
+  begin_time?: string;
   status: string;
 }
 
@@ -43,6 +43,29 @@ export default function HomeScreen() {
   const [visibleMenu, setVisibleMenu] = useState(false);
 
   const { groupId } = useSelectedGroup();
+
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return 'Todo el día';
+
+    const date = new Date(dateString);
+
+    // 1. Formateamos el día (Ej: "lun, 25 dic")
+    const dayPart = date.toLocaleDateString('es-ES', { 
+      weekday: 'short', // lun
+      day: 'numeric',   // 25
+      month: 'short'    // dic
+    });
+
+    // 2. Formateamos la hora (Ej: "14:30")
+    const timePart = date.toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+
+    // 3. Combinamos y capitalizamos la primera letra
+    const fullString = `${dayPart} • ${timePart}`;
+    return fullString.charAt(0).toUpperCase() + fullString.slice(1);
+  };
 
   const fetchDashboardData = async() => {
     if(!groupId){
@@ -185,7 +208,9 @@ export default function HomeScreen() {
                   <Text style={styles.cardIcon}>📅</Text>
                   <View>
                       <Text style={styles.cardTitle}>{evento.title}</Text>
-                      <Text style={styles.cardTime}>{evento.due_date ? new Date(evento.due_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Todo el día'}</Text>
+                      <Text style={styles.cardTime}>
+                        {formatDateTime(evento.begin_time)}
+                      </Text>
                   </View>
               </View>
           ))
@@ -193,32 +218,6 @@ export default function HomeScreen() {
           <View style={[styles.eventCard, { justifyContent: 'center', opacity: 0.8}]}>
             <Text style={{fontFamily: 'Poppins-Regular', color:Colors.text}}>
               No hay eventos próximos
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            Tareas Pendientes
-          </Text>
-        </View>
-        
-        {pendingTasks.length > 0 ? (
-          pendingTasks.map(tarea => (
-              <View key={tarea.task_id} style={styles.taskCard}>
-                  {/*Emoji porque no hay icono*/}
-                  <Text style={styles.cardIcon}>💊</Text>
-                  <View style={{ flex: 1 }}>
-                      <Text style={styles.cardTitle}>{tarea.title}</Text>
-                      <Text style={styles.cardSubtitle}>{tarea.description || 'Sin detalles'}</Text>
-                  </View>
-                  <Text style={{ fontSize: 24 }}>⋮</Text>
-              </View>
-          ))
-        ) : (
-          <View style={[styles.taskCard, { justifyContent: 'center', opacity: 0.8 }]}>
-            <Text style={{fontFamily: 'Poppins-Regular', color: Colors.text}}>
-              No hay tareas pendientes.
             </Text>
           </View>
         )}
