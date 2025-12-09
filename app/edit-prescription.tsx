@@ -5,7 +5,7 @@ import Colors from '@/constants/Colors';
 import { useEditItem } from '@/context/EditContext';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function EditMedicationScreen() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function EditMedicationScreen() {
       <ScreenHeader title="Editar Prescripción" />
       <ScrollView contentContainerStyle={styles.container}>
         <Text>Editando prescripción con ID: {selectedItem?.id}</Text>
-        <Text style={styles.placeholderText}>
+        <View style={styles.placeholderText}>
           <StyledTextInput 
             label="Nombre de la Prescripción" 
             placeholder="Ejemplo: Ibuprofeno 300 mg" 
@@ -70,7 +70,7 @@ export default function EditMedicationScreen() {
             onChangeText={setURL} 
             autoCapitalize="none"
           />
-        </Text>
+        </View>
                 <StyledButton title="Guardar cambios" onPress={() => {edit_prescription()}} />
                 <StyledButton title="Eliminar" variant="secondary" onPress={() => {delete_prescription()}} style={{ marginTop: 10, backgroundColor: '#fee2e2' }} />
       </ScrollView>

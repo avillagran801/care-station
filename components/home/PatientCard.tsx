@@ -9,6 +9,7 @@ interface PatientProps {
         names: string;
         surnames?: string;
         care_group_id?: number;
+        photo_url?: string;
     } | null;
     loading?: boolean;
 }
@@ -35,7 +36,15 @@ export default function PatientCard({ patient, loading}: PatientProps) {
 
     return (
         <View style={styles.card}>
-            <Image source={{ uri: 'https://i.pravatar.cc/150?img=11' }} style={styles.avatar} />
+            <Image 
+                source={
+                    patient.photo_url
+                    ? { uri: patient.photo_url }
+                    : require('../../assets/images/avatar.png')
+                }
+                style={styles.avatar}
+            />
+
             <View style={styles.info}>
                 <Text style={styles.name}>{patient.names}</Text>
                 <Text style={styles.surname}>{patient.surnames || ''}</Text>

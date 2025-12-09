@@ -1,12 +1,14 @@
 import ActionSheetModal, { ActionOption } from '@/components/ui/ActionSheetModal';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import StyledButton from '@/components/ui/StyledButton';
+import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
 import { careGroupApi, groupsApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -37,6 +39,11 @@ export default function SelectGroupScreen() {
   const [invitationCode, setInvitationCode] = useState('');
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editName, setEditName] = useState(''); 
+  const [editImageUri, setEditImageUri] = useState<string | null>(null); 
+  const [isSaving, setIsSaving] = useState(false);
+
   // Allows to save the selected group in global context
   const { setGroupId } = useSelectedGroup();
 
@@ -57,11 +64,66 @@ export default function SelectGroupScreen() {
     }
   };
 
-
   const handleLogout = async () => {
     setIsUserMenuVisible(false);
     await onLogout();
     router.replace('/(auth)/login');
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1], 
+      quality: 0.7,   
+    });
+
+    if (!result.canceled) {
+      setEditImageUri(result.assets[0].uri);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedGroup) return;
+
+    setIsSaving(true);
+    try {
+        const formData = new FormData();
+        
+        formData.append('patient_names', editName); 
+        
+        if (editImageUri && !editImageUri.startsWith('http')) {
+          let fileName = editImageUri.split('/').pop();
+  
+          // TRUCO: A veces el nombre no tiene extensión en Android. 
+          // Forzamos un nombre con extensión si no la tiene.
+          if (fileName && !fileName.includes('.')) {
+              fileName += '.jpg';
+          }
+
+          // Inferimos el tipo
+          const match = /\.(\w+)$/.exec(fileName || '');
+          const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+          // @ts-ignore
+          formData.append('photo', {
+              uri: editImageUri,
+              name: fileName || 'photo.jpg', 
+              type: type, // Asegura que sea algo como 'image/jpeg' o 'image/png'
+          });
+        }
+
+        await careGroupApi.update(selectedGroup.id, formData);
+
+        Toast.show({ type: 'success', text1: 'Grupo actualizado' });
+        setIsEditModalVisible(false);
+        loadGroups();
+    } catch (error) {
+        console.error("Error actualizando grupo", error);
+        Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo actualizar el grupo' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleGroupPress = (group: Group) => {
@@ -74,8 +136,13 @@ export default function SelectGroupScreen() {
     Toast.show({ type: 'success', text1: 'Grupo eliminado', text2: `ID: ${groupId}` });
   };
 
-  const handleEditGroup = (groupId: string) => {
-    Toast.show({ type: 'info', text1: 'Editar Grupo', text2: `ID: ${groupId}` });
+  const handleEditGroupPress = () => {
+    if (selectedGroup) {
+        setIsGroupMenuVisible(false); 
+        setEditName(selectedGroup.patientName);
+        setEditImageUri(selectedGroup.photoUrl);
+        setIsEditModalVisible(true); 
+    }
   };
 
   const handleInvitePress = async (groupId: string) => {
@@ -152,7 +219,7 @@ export default function SelectGroupScreen() {
     {
       label: 'Editar Grupo',
       icon: 'create-outline',
-      onPress: () => selectedGroup && handleEditGroup(selectedGroup.id)
+      onPress: () => handleEditGroupPress()
     },
     {
       label: 'Eliminar Grupo',
@@ -165,9 +232,8 @@ export default function SelectGroupScreen() {
   const renderGroupItem = ({ item }: { item: Group }) => (
     <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={() => handleGroupPress(item)}>
       <Image
-        source={{ uri: item.photoUrl }}
         style={styles.cardImage}
-        defaultSource={require('../../assets/images/avatar.png')} // Imagen por defecto si falla la URL
+        source={ item.photoUrl ? { uri: item.photoUrl } : require('../../assets/images/avatar.png') }
       />
 
       <View style={styles.cardContent}>
@@ -258,6 +324,50 @@ export default function SelectGroupScreen() {
           title={selectedGroup ? selectedGroup.patientName : 'Opciones'}
           options={getGroupMenuOptions()}
         />
+
+        <Modal animationType="slide" transparent={true} visible={isEditModalVisible} onRequestClose={() => setIsEditModalVisible(false)}>
+            <View style={styles.modalOverlay}>
+                <View style={styles.editModalContent}>
+                    <Text style={styles.editModalTitle}>Editar Grupo</Text>
+                    
+                    {/* Selector de Imagen */}
+                    <TouchableOpacity onPress={pickImage} style={styles.imagePickerContainer}>
+                        <Image 
+                            source={ editImageUri ? { uri: editImageUri } : require('../../assets/images/avatar.png') } 
+                            style={styles.editImagePreview} 
+                        />
+                        <View style={styles.editIconBadge}>
+                            <Ionicons name="camera" size={16} color="white" />
+                        </View>
+                    </TouchableOpacity>
+                    <Text style={styles.changePhotoText}>Toca para cambiar foto</Text>
+
+                    {/* Inputs */}
+                    <StyledTextInput 
+                        label="Nombre del Paciente" 
+                        value={editName} 
+                        onChangeText={setEditName} 
+                        placeholder="Ej: Juan Pérez"
+                    />
+
+                    {/* Botones */}
+                    <View style={{ gap: 10, marginTop: 20 }}>
+                        {isSaving ? (
+                            <ActivityIndicator color={Colors.primary} />
+                        ) : (
+                            <StyledButton title="Guardar Cambios" onPress={handleSaveEdit} />
+                        )}
+                        <StyledButton 
+                            title="Cancelar" 
+                            variant="secondary" 
+                            onPress={() => setIsEditModalVisible(false)} 
+                            style={{ backgroundColor: '#f3f4f6' }}
+                        />
+                    </View>
+                </View>
+            </View>
+        </Modal>
+
 
         <Modal
           animationType="fade"
@@ -375,4 +485,10 @@ const styles = StyleSheet.create({
     color: '#999',
     fontFamily: 'Poppins-Regular',
   },
+  editModalContent: { backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340, elevation: 5 },
+  editModalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, color: Colors.primaryDark, textAlign: 'center' },
+  imagePickerContainer: { alignSelf: 'center', marginBottom: 10, position: 'relative' },
+  editImagePreview: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#eee' },
+  editIconBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: Colors.primary, padding: 8, borderRadius: 20, borderWidth: 2, borderColor: 'white' },
+  changePhotoText: { textAlign: 'center', color: Colors.primary, marginBottom: 20, fontSize: 12 },
 });

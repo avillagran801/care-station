@@ -179,6 +179,14 @@ export const careGroupApi = {
   getMyGroups: () => {
     return apiClient.get('/my-groups');
   },
+
+  update: (groupId: string | number, formData: FormData) => {
+    return apiClient.post(`/care-groups/${groupId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 
