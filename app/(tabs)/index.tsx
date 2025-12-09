@@ -1,9 +1,11 @@
 import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { groupsApi, healthApi, patientApi, tasksApi, userApi } from '@/services/api';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { getToken, healthApi, patientsApi, removeToken, tasksApi, userApi } from '@/services/api';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ImageBackground, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ImageBackground, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 // Interfaces
@@ -30,62 +32,67 @@ interface Task {
 }
 
 export default function HomeScreen() {
-
   const [user, setUser] = useState<User | null>(null);
-  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [tempName, setTempName] = useState('');
 
-  const fetchDashboardData = async () => {
-    try{
-      const userRes = await userApi.me();
-      const userData = userRes.data;
-      setUser(userData);
-      setTempName(userData.names);
+  const [visibleMenu, setVisibleMenu] = useState(false);
 
-      const groupsRes = await groupsApi.getMyGroups();
-      const myGroups = groupsRes.data;
+  const { groupId } = useSelectedGroup();
 
-      if (myGroups && myGroups.length > 0) {
-        const activeGroupId = myGroups[0].id;
+  const fetchDashboardData = async() => {
+    if(!groupId){
+      Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
+      setLoading(false);
+      return;
+    }
 
-        const allPatientsRes = await patientApi.getAll();
-        const allPatients = allPatientsRes.data;
+    setLoading(true);
 
-        const foundPatient = allPatients.find((p: Patient) => p.care_group_id == activeGroupId);
+    try {
+      const response = await tasksApi.listUpcomingByGroup(Number(groupId));
+      setUpcomingEvents(response.data);
+      console.log("Tareas del grupo recuperadas.");
+      console.log(response.data);
 
-        if (foundPatient) {
-          setCurrentPatient(foundPatient);
-
-          try{
-            const tasksRes = await tasksApi.getPendingTasks(foundPatient.patient_id);
-            const tasksList = Array.isArray(tasksRes.data) ? tasksRes.data : [];
-            setPendingTasks(tasksList);
-
-            const eventsRes = await tasksApi.getUpcomingTasks(foundPatient.patient_id);
-            const eventsList = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-            setUpcomingEvents(eventsList);
-          } catch (taskError) {
-            console.log("Error cargando tareas (puede que no haya):", taskError);
-          }
-        } 
-      }
-    } catch (error) {
+      const response2 = await patientsApi.getByGroup(Number(groupId));
+      setPatient(response2.data);
+      console.log("Información del paciente recuperada");
+      console.log(response2.data);
+    }
+    catch (error: any){
       console.error('Error cargando dashboard:', error);
       Toast.show({ type: 'error', text1: 'Error de conexión', text2: 'No se pudieron cargar los datos.' });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
-  };
+    finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const checkBackendStatus = async () => {
+
+    const initializeScreen = async() => {
+      const token = await getToken();
+
+      if(!token) {
+        router.replace('/login');
+        return;
+      }
+
+      try {
+        const userResponse = await userApi.me();
+        console.log("USUARIO AUTENTICADO:", userResponse.data); 
+        setUser(userResponse.data); 
+
+      } catch (error: any) {
+        console.error("Error obteniendo datos del usuario:", error);
+        return; 
+      }
+
       console.log('Intentando conectar con el backend...');
       try {
         const response = await healthApi.check();
@@ -97,16 +104,35 @@ export default function HomeScreen() {
           console.error('   -> Status del error:', error.response.status);
         }
       }
-    };
 
-    checkBackendStatus();
-    fetchDashboardData();
+      fetchDashboardData();
+
+    }
+
+    initializeScreen();
+    
   }, []); 
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchDashboardData();
   }, []);
+
+  const handleLogout = async () => {
+    setVisibleMenu(false);
+    await removeToken();
+    router.replace('/login');
+  }
+
+  const handleChangeGroup = () => {
+    setVisibleMenu(false);
+    router.push('/select-group');
+  }
+
+  const handleEditProfile = () => {
+    setVisibleMenu(false);
+    // router.push('/profile/edit');
+  }
 
   if (loading && !refreshing){
     return (
@@ -135,29 +161,18 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image source={require('../../assets/images/avatar.png')} style={styles.userAvatar} />
             <View>
-              {editing?(
-                <TextInput
-                  value={tempName}
-                  onChangeText={setTempName}
-                  onBlur={() => setEditing(false)}
-                  style={styles.userNameInput}
-                  autoFocus
-                  returnKeyType="done"
-                  />
-              ):(
-                <Pressable onPress={() => setEditing(true)}>
-                  <Text style={styles.greeting}>¡Hola!</Text>
-                  <Text style={styles.userName}>
-                    {user ? `${user.names}` : 'Usuario'}
-                  </Text>
-                </Pressable>
-              )}
+              <Text style={styles.greeting}>¡Hola!</Text>
+              <Pressable onPress={() => setVisibleMenu(true)}>
+                <Text style={styles.userName}>
+                  {user ? `${user.names} ${user.surnames}` : 'Usuario'}
+                </Text>
+              </Pressable>
             </View>
           </View>
-          <Text style={{ fontSize: 24 }}>🔔</Text>
+          {/*<Text style={{ fontSize: 24 }}>🔔</Text>*/}
         </View>
 
-        <PatientCard patient={currentPatient} loading={loading} />
+        <PatientCard patient={patient} loading={loading} />
 
         <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Próximos Eventos</Text>
@@ -213,12 +228,38 @@ export default function HomeScreen() {
         <View style={{height: 100}} />
 
       </ScrollView>
+      <Modal
+        animationType='fade'
+        transparent={true}
+        visible={visibleMenu}
+        onRequestClose={() => setVisibleMenu(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setVisibleMenu(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Opciones de Cuenta</Text>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleChangeGroup}>
+              <Text style={styles.menuText}>Cambiar de Grupo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
+              <Text style={styles.menuText}>Editar Perfil</Text>
+            </TouchableOpacity>
+
+            <View style={styles.separator} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <Text style={[styles.menuText, { color: 'red', fontWeight: 'bold' }]}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
       </ImageBackground>
     </CustomSafeArea>
   );
 }
 
-// ...existing code...
+
 const styles = StyleSheet.create({
     backgroundImage: {
       flex: 1,
@@ -229,14 +270,6 @@ const styles = StyleSheet.create({
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
     greeting: { fontSize: 16, color: Colors.black, fontFamily: 'Poppins-SemiBold' },
     userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text,  fontFamily: 'Poppins-Regular'  },
-    userNameInput: {
-      fontSize: 20,
-      color: Colors.text,
-      fontWeight: '700',
-      paddingVertical: 4,
-      minWidth: 140,
-      fontFamily: 'Poppins-SemiBold',
-    },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10,  fontFamily: 'Poppins-Regular'  },
     sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.primaryDark2, fontFamily: 'Poppins-Regular'  },
     sectionDate: { color: Colors.primaryDark2, fontFamily: 'Poppins-Regular', fontSize: 18 },
@@ -279,4 +312,42 @@ const styles = StyleSheet.create({
       fontSize: 13,
       opacity: 0.9,
     },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      width: '80%',
+      borderRadius: 20,
+      padding: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: Colors.primaryDark,
+    },
+    menuItem: {
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+    },
+    menuText: {
+      fontSize: 16,
+      color: Colors.text,
+      fontFamily: 'Poppins-Regular',
+    },
+    separator: {
+      height: 1,
+      backgroundColor: '#EEEEEE',
+      marginVertical: 10,
+    }
 });

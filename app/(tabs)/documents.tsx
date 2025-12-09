@@ -1,18 +1,25 @@
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 export default function DocumentsScreen() {
   return (
     <CustomSafeArea withTabBar>
-      <View style={styles.container}>
-        <Text style={styles.title}>Pantalla de Documentos</Text>
-      </View>
+      <ImageBackground
+        source={require('@/assets/images/background2.jpg')}
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
+        <View style={styles.container}>
+          <Text style={styles.title}>Pantalla de Documentos</Text>
+        </View>
+      </ImageBackground>
     </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: { flex: 1, width: '100%'},
   container: {
     flex: 1,
     justifyContent: 'center',
