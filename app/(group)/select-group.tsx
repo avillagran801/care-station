@@ -90,36 +90,37 @@ export default function SelectGroupScreen() {
     try {
         const formData = new FormData();
         
+        // Texto
         formData.append('patient_names', editName); 
         
+        // Imagen (Solo si cambió)
         if (editImageUri && !editImageUri.startsWith('http')) {
-          let fileName = editImageUri.split('/').pop();
-  
-          // TRUCO: A veces el nombre no tiene extensión en Android. 
-          // Forzamos un nombre con extensión si no la tiene.
-          if (fileName && !fileName.includes('.')) {
-              fileName += '.jpg';
-          }
+            // Obtener nombre y extensión
+            let fileName = editImageUri.split('/').pop();
+            if (fileName && !fileName.includes('.')) {
+                fileName += '.jpg'; // Fallback por si acaso
+            }
 
-          // Inferimos el tipo
-          const match = /\.(\w+)$/.exec(fileName || '');
-          const type = match ? `image/${match[1]}` : `image/jpeg`;
+            // Inferir tipo MIME (Crucial para Laravel/Android)
+            const match = /\.(\w+)$/.exec(fileName || '');
+            const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-          // @ts-ignore
-          formData.append('photo', {
-              uri: editImageUri,
-              name: fileName || 'photo.jpg', 
-              type: type, // Asegura que sea algo como 'image/jpeg' o 'image/png'
-          });
+            // @ts-ignore
+            formData.append('photo', {
+                uri: editImageUri,
+                name: fileName || 'photo.jpg',
+                type: type, // Ej: 'image/jpeg'
+            });
         }
 
         await careGroupApi.update(selectedGroup.id, formData);
 
         Toast.show({ type: 'success', text1: 'Grupo actualizado' });
         setIsEditModalVisible(false);
-        loadGroups();
-    } catch (error) {
-        console.error("Error actualizando grupo", error);
+        loadGroups(); // Recargar para ver la nueva foto
+    } catch (error: any) {
+        console.error("Error update:", error);
+        // Tip: Imprimir error.response.data ayuda mucho a ver qué dice el backend
         Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo actualizar el grupo' });
     } finally {
         setIsSaving(false);
