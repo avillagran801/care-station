@@ -2,9 +2,10 @@ import PatientCard from '@/components/home/PatientCard';
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
-import { healthApi, patientsApi, tasksApi } from '@/services/api';
+import { getToken, healthApi, patientsApi, removeToken, tasksApi, userApi } from '@/services/api';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ImageBackground, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ImageBackground, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 // Interfaces
@@ -38,8 +39,8 @@ export default function HomeScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [tempName, setTempName] = useState('');
+
+  const [visibleMenu, setVisibleMenu] = useState(false);
 
   const { groupId } = useSelectedGroup();
 
@@ -71,7 +72,25 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    const checkBackendStatus = async () => {
+
+    const initializeScreen = async() => {
+      const token = await getToken();
+
+      if(!token) {
+        router.replace('/login');
+        return;
+      }
+
+      try {
+        const userResponse = await userApi.me();
+        console.log("USUARIO AUTENTICADO:", userResponse.data); 
+        setUser(userResponse.data); 
+
+      } catch (error: any) {
+        console.error("Error obteniendo datos del usuario:", error);
+        return; 
+      }
+
       console.log('Intentando conectar con el backend...');
       try {
         const response = await healthApi.check();
@@ -83,16 +102,35 @@ export default function HomeScreen() {
           console.error('   -> Status del error:', error.response.status);
         }
       }
-    };
 
-    checkBackendStatus();
-    fetchDashboardData();
+      fetchDashboardData();
+
+    }
+
+    initializeScreen();
+    
   }, []); 
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchDashboardData();
   }, []);
+
+  const handleLogout = async () => {
+    setVisibleMenu(false);
+    await removeToken();
+    router.replace('/login');
+  }
+
+  const handleChangeGroup = () => {
+    setVisibleMenu(false);
+    router.push('/select-group');
+  }
+
+  const handleEditProfile = () => {
+    setVisibleMenu(false);
+    // router.push('/profile/edit');
+  }
 
   if (loading && !refreshing){
     return (
@@ -121,26 +159,15 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image source={require('../../assets/images/avatar.png')} style={styles.userAvatar} />
             <View>
-              {editing?(
-                <TextInput
-                  value={tempName}
-                  onChangeText={setTempName}
-                  onBlur={() => setEditing(false)}
-                  style={styles.userNameInput}
-                  autoFocus
-                  returnKeyType="done"
-                  />
-              ):(
-                <Pressable onPress={() => setEditing(true)}>
-                  <Text style={styles.greeting}>¡Hola!</Text>
-                  <Text style={styles.userName}>
-                    {user ? `${user.names}` : 'Usuario'}
-                  </Text>
-                </Pressable>
-              )}
+              <Text style={styles.greeting}>¡Hola!</Text>
+              <Pressable onPress={() => setVisibleMenu(true)}>
+                <Text style={styles.userName}>
+                  {user ? `${user.names} ${user.surnames}` : 'Usuario'}
+                </Text>
+              </Pressable>
             </View>
           </View>
-          <Text style={{ fontSize: 24 }}>🔔</Text>
+          {/*<Text style={{ fontSize: 24 }}>🔔</Text>*/}
         </View>
 
         <PatientCard patient={patient} loading={loading} />
@@ -199,12 +226,38 @@ export default function HomeScreen() {
         <View style={{height: 100}} />
 
       </ScrollView>
+      <Modal
+        animationType='fade'
+        transparent={true}
+        visible={visibleMenu}
+        onRequestClose={() => setVisibleMenu(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setVisibleMenu(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Opciones de Cuenta</Text>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleChangeGroup}>
+              <Text style={styles.menuText}>Cambiar de Grupo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
+              <Text style={styles.menuText}>Editar Perfil</Text>
+            </TouchableOpacity>
+
+            <View style={styles.separator} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <Text style={[styles.menuText, { color: 'red', fontWeight: 'bold' }]}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
       </ImageBackground>
     </CustomSafeArea>
   );
 }
 
-// ...existing code...
+
 const styles = StyleSheet.create({
     backgroundImage: {
       flex: 1,
@@ -215,14 +268,6 @@ const styles = StyleSheet.create({
     userAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
     greeting: { fontSize: 16, color: Colors.black, fontFamily: 'Poppins-SemiBold' },
     userName: { fontSize: 20, fontWeight: 'bold', color: Colors.text,  fontFamily: 'Poppins-Regular'  },
-    userNameInput: {
-      fontSize: 20,
-      color: Colors.text,
-      fontWeight: '700',
-      paddingVertical: 4,
-      minWidth: 140,
-      fontFamily: 'Poppins-SemiBold',
-    },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, marginBottom: 10,  fontFamily: 'Poppins-Regular'  },
     sectionTitle: { fontSize: 22, fontWeight: 'bold', color: Colors.primaryDark2, fontFamily: 'Poppins-Regular'  },
     sectionDate: { color: Colors.primaryDark2, fontFamily: 'Poppins-Regular', fontSize: 18 },
@@ -265,4 +310,42 @@ const styles = StyleSheet.create({
       fontSize: 13,
       opacity: 0.9,
     },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      width: '80%',
+      borderRadius: 20,
+      padding: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: Colors.primaryDark,
+    },
+    menuItem: {
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+    },
+    menuText: {
+      fontSize: 16,
+      color: Colors.text,
+      fontFamily: 'Poppins-Regular',
+    },
+    separator: {
+      height: 1,
+      backgroundColor: '#EEEEEE',
+      marginVertical: 10,
+    }
 });

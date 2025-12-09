@@ -255,24 +255,24 @@ export default function AddTaskScreen() {
 
   return (
     <CustomSafeArea>
-      <ScreenHeader title="Nueva Tarea" />
-      
-      <ScrollView contentContainerStyle={styles.container}>
+        <ScreenHeader title="Nueva Tarea" />
         
-        <StyledTextInput 
-            label="Tarea" 
-            placeholder="Ej: Tomar pastilla..." 
-            value={title}
-            onChangeText={setTitle}
-        />
+        <ScrollView contentContainerStyle={styles.container}>
+          
+          <StyledTextInput 
+              label="Tarea" 
+              placeholder="Ej: Tomar pastilla..." 
+              value={title}
+              onChangeText={setTitle}
+          />
 
-        <StyledTextInput 
-            label="Descripción" 
-            placeholder="Detalles adicionales..." 
-            value={description}
-            onChangeText={setDescription}
-            multiline
-        />
+          <StyledTextInput 
+              label="Descripción" 
+              placeholder="Detalles adicionales..." 
+              value={description}
+              onChangeText={setDescription}
+              multiline
+          />
 
         <View style={styles.row}>
             <View style={{ flex: 1, marginRight: 10 }}>
@@ -285,29 +285,29 @@ export default function AddTaskScreen() {
             </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
-        <View style={styles.row}>
-            <View style={{ flex: 1.5, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Fecha</Text>
-                <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
-            </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.subLabel}>Hora</Text>
-                <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
-            </View>
-        </View>
+          <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+              </View>
+          </View>
 
-        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
-        <View style={styles.row}>
-            <View style={{ flex: 1.5, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Fecha</Text>
-                <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
-            </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.subLabel}>Hora</Text>
-                <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
-            </View>
-        </View>
+          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fecha y Hora de Término</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora</Text>
+                  <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+              </View>
+          </View>
 
         <View style={{ marginTop: 10 }}>
             {renderSelector("Repetición", frequency, "repeat-outline", () => setActiveModal('frequency'))}
@@ -317,7 +317,7 @@ export default function AddTaskScreen() {
             <StyledButton title="Agregar tarea" onPress={handleCreateTask} />
         </View>
 
-      </ScrollView>
+        </ScrollView>
 
       {/* MODALES */}
       <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
@@ -377,7 +377,8 @@ export default function AddTaskScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
+    marginTop: 0, 
     padding: 30, 
     paddingBottom: 10 
   },
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
   modalTitle: { 
     fontSize: 18, 
     fontWeight: 'bold', 
-    marginBottom: 15, 
+    marginBottom: 10, 
     textAlign: 'center', 
     color: Colors.text 
   },

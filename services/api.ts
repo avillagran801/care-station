@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { baseURL } from '../lib/apiConfig';
@@ -11,7 +12,7 @@ export const apiClient = axios.create({
   },
 });
 
-async function getToken() {
+export async function getToken() {
   try {
     if (Platform.OS === 'web') {
       return localStorage.getItem('token');
@@ -21,6 +22,18 @@ async function getToken() {
   } catch (error) {
     console.error("Error leyendo token", error);
     return null;
+  }
+}
+
+export async function removeToken() {
+  try {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem('token');
+    } else {
+      await SecureStore.deleteItemAsync('token');
+    }
+  } catch (error) {
+    console.error("Error eliminando token", error);
   }
 }
 
@@ -40,8 +53,20 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
-      console.log("Sesión expirada o token inválido");
+    if (error.response) {
+      if(error.response.status === 401) {
+        const isLoginRequest = error.config.url.includes('/login');
+
+        if (!isLoginRequest) {
+          console.log("Sesión expirada detectada. Redirigiendo...");
+
+          await removeToken();
+
+          setTimeout(() => {
+              router.replace('/login');
+          }, 100);
+        }
+      }
     }
     return Promise.reject(error);
   }
