@@ -325,6 +325,11 @@ export default function AddTaskScreen() {
 
   return (
     <CustomSafeArea>
+      <ImageBackground 
+              source={require('../assets/images/background2.jpg')} 
+              resizeMode="cover"
+              style={styles.backgroundImage}
+      >
         <ScreenHeader title="Nueva Tarea" />
         
         <ScrollView contentContainerStyle={styles.container}>
@@ -344,106 +349,106 @@ export default function AddTaskScreen() {
               multiline
           />
 
-        <View style={styles.row}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-                {renderSelector("Asignado a",
-                  assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Sin asignar", 
-                  "person-outline", () => setActiveModal('assign'))}
-            </View>
-            <View style={{ flex: 1 }}>
-                {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
-            </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>Fecha y rango horario</Text>
-        <View style={styles.row}>
-            <View style={{ flex: 1.5, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Fecha</Text>
-                <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
-            </View>
-            <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={styles.subLabel}>Hora de inicio</Text>
-                <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
-            </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.subLabel}>Hora de término</Text>
-                <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
-            </View>
-        </View>
-
-        <View style={{ marginTop: 10 }}>
-            {renderSelector("Frecuencia", frequency.text, "repeat-outline", () => setActiveModal('frequency'))}
-        </View>
-
-        {frequency.value !== 0 &&
-        (<>
-          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Repetir hasta</Text>
           <View style={styles.row}>
-              <View style={{ flex: 1.5, marginRight: 10 }}>
-                  <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+              <View style={{ flex: 1, marginRight: 10 }}>
+                  {renderSelector("Asignado a",
+                    assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Sin asignar", 
+                    "person-outline", () => setActiveModal('assign'))}
+              </View>
+              <View style={{ flex: 1 }}>
+                  {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
               </View>
           </View>
-        </>)}
 
-        <View style={{ marginTop: 10 }}>
-            <StyledButton title="Agregar tarea" onPress={handleCreateTask} />
-        </View>
+          <Text style={styles.sectionTitle}>Fecha y rango horario</Text>
+          <View style={styles.row}>
+              <View style={{ flex: 1.5, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Fecha</Text>
+                  <PlatformDatePicker value={startDate} mode="date" onChange={(e, d) => d && setStartDate(d)} />
+              </View>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                  <Text style={styles.subLabel}>Hora de inicio</Text>
+                  <PlatformDatePicker value={startTime} mode="time" onChange={(e, d) => d && setStartTime(d)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>Hora de término</Text>
+                  <PlatformDatePicker value={endTime} mode="time" onChange={(e, d) => d && setEndTime(d)} />
+              </View>
+          </View>
 
-        </ScrollView>
+          <View style={{ marginTop: 10 }}>
+              {renderSelector("Frecuencia", frequency.text, "repeat-outline", () => setActiveModal('frequency'))}
+          </View>
 
-      {/* MODALES */}
-      <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-                {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
-            </Text>
-            
-            <ScrollView style={{ maxHeight: 300 }}>
-              {activeModal === 'assign' && (
-                <>
-                  {/* Opción: Sin asignar */}
-                  <TouchableOpacity 
-                      style={styles.modalOption} 
-                      onPress={() => { setAssignedTo(undefined); setActiveModal('none'); }}
-                  >
-                      <Text style={styles.modalOptionText}>Sin asignar</Text>
-                      {!assignedTo && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                  </TouchableOpacity>
+          {frequency.value !== 0 &&
+          (<>
+            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Repetir hasta</Text>
+            <View style={styles.row}>
+                <View style={{ flex: 1.5, marginRight: 10 }}>
+                    <PlatformDatePicker value={endDate} mode="date" onChange={(e, d) => d && setEndDate(d)} />
+                </View>
+            </View>
+          </>)}
 
-                  {/* Miembros */}
-                  {groupMembers.map((m) => (
-                      <TouchableOpacity 
-                          key={m.user_id} 
-                          style={styles.modalOption} 
-                          onPress={() => { setAssignedTo(m); setActiveModal('none'); }}
-                      >
-                          <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
-                          {assignedTo?.user_id === m.user_id && (
-                              <Ionicons name="checkmark" size={20} color={Colors.primary} />
-                          )}
+          <View style={{ marginTop: 10 }}>
+              <StyledButton title="Agregar tarea" onPress={handleCreateTask} />
+          </View>
+
+          </ScrollView>
+
+        {/* MODALES */}
+        <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                  {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
+              </Text>
+              
+              <ScrollView style={{ maxHeight: 300 }}>
+                {activeModal === 'assign' && (
+                  <>
+                    {/* Opción: Sin asignar */}
+                    <TouchableOpacity 
+                        style={styles.modalOption} 
+                        onPress={() => { setAssignedTo(undefined); setActiveModal('none'); }}
+                    >
+                        <Text style={styles.modalOptionText}>Sin asignar</Text>
+                        {!assignedTo && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+
+                    {/* Miembros */}
+                    {groupMembers.map((m) => (
+                        <TouchableOpacity 
+                            key={m.user_id} 
+                            style={styles.modalOption} 
+                            onPress={() => { setAssignedTo(m); setActiveModal('none'); }}
+                        >
+                            <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
+                            {assignedTo?.user_id === m.user_id && (
+                                <Ionicons name="checkmark" size={20} color={Colors.primary} />
+                            )}
+                        </TouchableOpacity>
+                    ))}
+                  </>
+                )}
+
+                  {activeModal === 'category' && categories.map((c, i) => (
+                      <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
+                          <Text style={styles.modalOptionText}>{c}</Text>
+                          {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
                       </TouchableOpacity>
                   ))}
-                </>
-              )}
-
-                {activeModal === 'category' && categories.map((c, i) => (
-                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{c}</Text>
-                        {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
-                {activeModal === 'frequency' && frequencyOptions.map((r) => (
-                    <TouchableOpacity key={r.value} style={styles.modalOption} onPress={() => { setfrequency(r); setActiveModal('none'); }}>
-                        <Text style={styles.modalOptionText}>{r.text}</Text>
-                        {frequency === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
+                  {activeModal === 'frequency' && frequencyOptions.map((r) => (
+                      <TouchableOpacity key={r.value} style={styles.modalOption} onPress={() => { setfrequency(r); setActiveModal('none'); }}>
+                          <Text style={styles.modalOptionText}>{r.text}</Text>
+                          {frequency === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                      </TouchableOpacity>
+                  ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </ImageBackground>
     </CustomSafeArea>
   );
 }
