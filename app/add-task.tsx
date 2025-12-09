@@ -3,20 +3,16 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { groupsApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
-import React, { createElement, useState } from 'react';
-import { ImageBackground, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { createElement, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ImageBackground, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-// Dejo ejemplos para categorias, Asignaciones y Formatos de repetición
-const mockMembers = [
-    { id: '1', name: 'Yo (Admin)' },
-    { id: '2', name: 'Maria (Cuidadora)' },
-    { id: '3', name: 'Jorge (Hijo)' },
-];
-const mockCategories = ['Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
+const categories = ['Salud', 'Higiene', 'Alimentación', 'Ejercicio', 'Trámites', 'Ocio'];
 const repetitionOptions = ['No se repite', 'Todos los dias', 'Todas las semanas', 'Todos los meses'];
 
 // Los inputs HTML necesitan strings formato "YYYY-MM-DD" y "HH:MM"
@@ -125,15 +121,25 @@ const PlatformDatePicker = ({
   );
 };
 
+interface GroupMember {
+  user_id: string;
+  names: string;
+  surnames: string;
+}
 
 export default function AddTaskScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  
+  const { groupId, hydrated } = useSelectedGroup();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   
-  const [assignedTo, setAssignedTo] = useState(mockMembers[0]);
-  const [category, setCategory] = useState(mockCategories[0]);
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+
+  const [assignedTo, setAssignedTo] = useState<GroupMember>();
+  const [category, setCategory] = useState(categories[0]);
   const [repetition, setRepetition] = useState(repetitionOptions[0]);
 
   const [startDate, setStartDate] = useState(new Date());
@@ -142,6 +148,44 @@ export default function AddTaskScreen() {
   const [endTime, setEndTime] = useState(new Date(new Date().setHours(new Date().getHours() + 1))); 
 
   const [activeModal, setActiveModal] = useState<'none' | 'assign' | 'category' | 'repetition'>('none');
+
+  const handleGroupMembers = async () => {
+    if(!groupId){
+      Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
+
+      setLoading(false);
+      return;  
+    }
+
+    setLoading(true);
+    try {
+      const response = await groupsApi.getMembers(Number(groupId));
+      setGroupMembers(response.data);
+      console.log("Miembros del grupo recuperados");
+
+      if (response.data.length > 0) {
+        setAssignedTo(response.data[0]);
+      }
+    }
+    catch (error: any){
+      console.error("Error al intentar recuperar los miembros del grupo:", error.response?.data || error.message);
+      Alert.alert("Error al intentar recuperar los miembros del grupo", error.response?.data || error.message)
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if(hydrated && !groupId){
+      router.replace("/select-group");
+    }
+
+    if (hydrated && groupId){
+      handleGroupMembers();
+    }
+  }, [hydrated, groupId]);
 
   const handleCreateTask = () => {
     if (!title.trim()) {
@@ -163,7 +207,7 @@ export default function AddTaskScreen() {
     const payload = {
         title,
         description,
-        assigned_to: assignedTo.id,
+        assigned_to: assignedTo?.user_id || "",
         category,
         repetition,
         start_time: finalStart.toISOString(),
@@ -188,13 +232,20 @@ export default function AddTaskScreen() {
     </View>
   );
 
+  if (loading || !hydrated){
+    return (
+      <CustomSafeArea>
+        <ImageBackground source={require('../assets/images/background2.jpg')} style={styles.backgroundImage}>
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color={Colors.primaryDark} />
+          </View>
+        </ImageBackground>
+      </CustomSafeArea>
+    )
+  }
+
   return (
     <CustomSafeArea>
-      <ImageBackground
-              source={require('@/assets/images/background2.jpg')}
-              resizeMode="cover"
-              style={styles.backgroundImage}
-      >
         <ScreenHeader title="Nueva Tarea" />
         
         <ScrollView contentContainerStyle={styles.container}>
@@ -214,14 +265,16 @@ export default function AddTaskScreen() {
               multiline
           />
 
-          <View style={styles.row}>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                  {renderSelector("Asignado a", assignedTo.name.split(' ')[0], "person-outline", () => setActiveModal('assign'))}
-              </View>
-              <View style={{ flex: 1 }}>
-                  {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
-              </View>
-          </View>
+        <View style={styles.row}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+                {renderSelector("Asignado a",
+                  assignedTo? `${assignedTo.names.split(' ')[0]} ${assignedTo.surnames.split(' ')[0]}` : "Selecciona un miembro", 
+                  "person-outline", () => setActiveModal('assign'))}
+            </View>
+            <View style={{ flex: 1 }}>
+                {renderSelector("Categoría", category, "pricetag-outline", () => setActiveModal('category'))}
+            </View>
+        </View>
 
           <Text style={styles.sectionTitle}>Fecha y Hora de Inicio</Text>
           <View style={styles.row}>
@@ -257,44 +310,43 @@ export default function AddTaskScreen() {
 
         </ScrollView>
 
-        {/* MODALES */}
-        <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
-          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>
-                  {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
-              </Text>
-              
-              <ScrollView style={{ maxHeight: 300 }}>
-                  {activeModal === 'assign' && mockMembers.map((m) => (
-                      <TouchableOpacity key={m.id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
-                          <Text style={styles.modalOptionText}>{m.name}</Text>
-                          {assignedTo.id === m.id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                      </TouchableOpacity>
-                  ))}
-                  {activeModal === 'category' && mockCategories.map((c, i) => (
-                      <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
-                          <Text style={styles.modalOptionText}>{c}</Text>
-                          {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                      </TouchableOpacity>
-                  ))}
-                  {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
-                      <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
-                          <Text style={styles.modalOptionText}>{r}</Text>
-                          {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
-                      </TouchableOpacity>
-                  ))}
-              </ScrollView>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      </ImageBackground>
+      {/* MODALES */}
+      <Modal animationType="fade" transparent={true} visible={activeModal !== 'none'} onRequestClose={() => setActiveModal('none')}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setActiveModal('none')}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+                {activeModal === 'assign' ? 'Seleccionar Responsable' : activeModal === 'category' ? 'Seleccionar Categoría' : 'Frecuencia'}
+            </Text>
+            
+            <ScrollView style={{ maxHeight: 300 }}>
+                {activeModal === 'assign' && groupMembers && groupMembers.map((m) => (
+                    <TouchableOpacity key={m.user_id} style={styles.modalOption} onPress={() => { setAssignedTo(m); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{m.names} {m.surnames}</Text>
+                        {assignedTo?.user_id === m.user_id && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'category' && categories.map((c, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setCategory(c); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{c}</Text>
+                        {category === c && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+                {activeModal === 'repetition' && repetitionOptions.map((r, i) => (
+                    <TouchableOpacity key={i} style={styles.modalOption} onPress={() => { setRepetition(r); setActiveModal('none'); }}>
+                        <Text style={styles.modalOptionText}>{r}</Text>
+                        {repetition === r && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </CustomSafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: { flex: 1, width: '100%'},
   container: {
     marginTop: 0, 
     padding: 30, 
@@ -386,5 +438,9 @@ const styles = StyleSheet.create({
   modalOptionText: { 
     fontSize: 16, 
     color: Colors.text 
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
   },
 });

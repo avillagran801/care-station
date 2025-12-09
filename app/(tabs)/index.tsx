@@ -48,7 +48,7 @@ export default function HomeScreen() {
     if(!groupId){
       Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
       setLoading(false);
-      return;  
+      return;
     }
 
     setLoading(true);

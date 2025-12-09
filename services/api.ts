@@ -105,6 +105,10 @@ export const groupsApi = {
   findGroup: (data: { code: string }) => {
     return;
   },
+
+  getMembers: (care_group_id: number) => {
+    return apiClient.get(`/care-groups/get-members/${care_group_id}`);
+  },
 }
 
 export const tasksApi = {
