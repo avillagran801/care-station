@@ -6,6 +6,7 @@ import Colors from '@/constants/Colors';
 import { useSelectedGroup } from '@/context/SelectedGroupContext';
 import { DatabaseTask } from '@/lib/databaseInterface';
 import { tasksApi } from '@/services/api';
+import { router } from 'expo-router';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -19,11 +20,10 @@ export default function DailyTasksScreen() {
   const [rawTasks, setRawTasks] = useState<DatabaseTask[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const { groupId } = useSelectedGroup();
+  const { groupId, hydrated } = useSelectedGroup();
 
   const handleTasks = async () => {
     if(!groupId){
-      
       Alert.alert('Error', 'Hubo un problema al recuperar las credenciales del grupo.');
       Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
 
@@ -48,8 +48,14 @@ export default function DailyTasksScreen() {
   }
 
   useEffect(() => {
-    handleTasks();
-  }, []);
+    if(hydrated && !groupId){
+      router.replace("/select-group");
+    }
+
+    if (hydrated && groupId){
+      handleTasks();
+    }
+  }, [hydrated, groupId]);
 
   const transformRawDataToAgenda = (tasks: DatabaseTask[]): AgendaItem[] => {
     const grouped: { [key: string]: AgendaItem } = {};

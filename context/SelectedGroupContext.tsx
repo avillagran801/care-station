@@ -3,44 +3,40 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type SelectedGroupContextType = {
   groupId: string | null;
-  setGroupId: (value: string | null) => Promise<void>;
+  setGroupId: (id: string | null) => Promise<void>;
+  hydrated: boolean;
 };
 
 const SelectedGroupContext = createContext<SelectedGroupContextType | null>(null);
 
-export function SelectedGroupProvider({ children } : { children: React.ReactNode }) {
-  const [groupId, _setGroupId] = useState<string | null>(null);
-
-  // Load previous groupId from AsyncStorage if available
-  const setGroupId = async (value: string | null) => {
-    _setGroupId(value);
-    if (value === null) {
-      await AsyncStorage.removeItem("selectedGroup");
-    } else {
-      await AsyncStorage.setItem("selectedGroup", value);
-    }
-  };
+export function SelectedGroupProvider({ children }: { children: React.ReactNode }) {
+  const [groupId, setGroupIdState] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const stored = await AsyncStorage.getItem("selectedGroup");
-      if (stored) {
-        _setGroupId(stored);
-      }
-    })();
+    const load = async () => {
+      const saved = await AsyncStorage.getItem("selected_group");
+      if (saved) setGroupIdState(saved);
+      setHydrated(true);
+    };
+    load();
   }, []);
 
+  const setGroupId = async (id: string | null) => {
+    setGroupIdState(id);
+    if (id) await AsyncStorage.setItem("selected_group", id);
+    else await AsyncStorage.removeItem("selected_group");
+  };
+
   return (
-    <SelectedGroupContext.Provider value={{ groupId, setGroupId }}>
+    <SelectedGroupContext.Provider value={{ groupId, setGroupId, hydrated }}>
       {children}
     </SelectedGroupContext.Provider>
   );
 }
 
 export function useSelectedGroup() {
-  const context = useContext(SelectedGroupContext);
-  if (!context) {
-    throw new Error("useSelectedGroup must be used inside SelectedGroupProvider");
-  }
-  return context;
+  const ctx = useContext(SelectedGroupContext);
+  if (!ctx) throw new Error("useSelectedGroup must be inside provider");
+  return ctx;
 }
