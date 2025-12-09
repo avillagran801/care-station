@@ -1,6 +1,7 @@
 import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { groupsApi, patientsApi } from '@/services/api'; // <--- Importamos las APIs
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { patientsApi } from '@/services/api'; // <--- Importamos las APIs
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -86,30 +87,39 @@ export default function ProfileScreen() {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const { groupId } = useSelectedGroup();
+
   // Cargar datos cada vez que la pantalla gana foco
   useFocusEffect(
     useCallback(() => {
       fetchPatientData();
-    }, [])
+    }, [groupId])
   );
 
   const fetchPatientData = async () => {
+    if(!groupId) return;
+
     try {
         setLoading(true);
         // 1. Obtener grupos para saber cual es el activo (Usamos el primero por defecto)
-        const groupsRes = await groupsApi.getMyGroups();
         
-        if (groupsRes.data && groupsRes.data.length > 0) {
-            const activeGroupId = groupsRes.data[0].id; // Ojo: Aquí deberías usar el ID seleccionado globalmente si lo tuvieras
+        const patientRes = await patientsApi.getByGroup(Number(groupId));
+        const data = patientRes.data;
 
-            // 2. Obtener todos los pacientes y filtrar
-            const patientsRes = await patientsApi.getAll();
-            const foundPatient = patientsRes.data.find((p: any) => p.care_group_id == activeGroupId);
+        let foundPatient = null;
 
-            if (foundPatient) {
-                setPatient(foundPatient);
+        if (Array.isArray(data)) {
+            foundPatient = data.find((p: any) => p.care_group_id === Number(groupId));
+            if (!foundPatient && data.length > 0) {
+                foundPatient = data[0];
             }
+        } else {
+            foundPatient = data;
         }
+
+        if (foundPatient) {
+            setPatient(foundPatient);
+        } 
     } catch (error) {
         console.error("Error fetching patient profile:", error);
         Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudieron cargar los datos del paciente.' });

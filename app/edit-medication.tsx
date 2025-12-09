@@ -2,8 +2,9 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import Colors from '@/constants/Colors';
-import { medicationApi } from '@/services/api';
+import { medicationsApi } from '@/services/api';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, Platform, ScrollView, StyleSheet, View } from 'react-native'; // <--- Importar Platform
@@ -24,7 +25,7 @@ export default function EditMedicationScreen() {
 
   const loadMedication = async () => {
     try {
-        const response = await medicationApi.getOne(Number(id));
+        const response = await medicationsApi.read(Number(id))
         setName(response.data.name);
         setDescription(response.data.description || '');
     } catch (error) {
@@ -40,7 +41,7 @@ export default function EditMedicationScreen() {
 
     setIsSaving(true);
     try {
-        await medicationApi.update(Number(id), { name, description });
+        await medicationsApi.update(Number(id), { name, description });
         Toast.show({ type: 'success', text1: 'Actualizado', text2: 'Medicamento modificado correctamente.' });
         router.back();
     } catch (error) {
@@ -55,7 +56,7 @@ export default function EditMedicationScreen() {
   // 1. La función que realmente llama a la API
   const performDelete = async () => {
     try {
-        await medicationApi.delete(Number(id));
+        await medicationsApi.delete(Number(id));
         Toast.show({ type: 'success', text1: 'Eliminado', text2: 'Medicamento eliminado.' });
         router.back();
     } catch (error) {

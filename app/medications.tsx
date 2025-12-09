@@ -1,6 +1,8 @@
+import CustomSafeArea from '@/components/ui/CustomSafeArea';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import Colors from '@/constants/Colors';
-import { groupsApi, medicationApi, patientsApi } from '@/services/api';
+import { useSelectedGroup } from '@/context/SelectedGroupContext';
+import { medicationsApi, patientsApi } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -14,29 +16,43 @@ export default function MedicationsScreen() {
   const [loading, setLoading] = useState(true);
   const [currentPatientId, setCurrentPatientId] = useState<number | null>(null);
 
+  const { groupId } = useSelectedGroup();
+
   useFocusEffect(
     useCallback(() => {
         loadData();
-    }, [])
+    }, [groupId])
   );
 
   const loadData = async () => {
+    if(!groupId) return;
+
     try {
         setLoading(true);
-        const groupsRes = await groupsApi.getMyGroups();
-        if (groupsRes.data.length > 0) {
-            const groupId = groupsRes.data[0].id;
-            
-            const patRes = await patientsApi.getAll(); 
-            
-            const patient = patRes.data.find((p: any) => p.care_group_id == groupId);
-            
-            if (patient) {
-                setCurrentPatientId(patient.patient_id);
-                const medRes = await medicationApi.getAll(patient.patient_id);
-                setMedications(medRes.data);
+
+        const patRes = await patientsApi.getByGroup(Number(groupId));
+        const data = patRes.data;
+
+        let patient = null;
+
+        if (Array.isArray(data)) {
+            // Si es una lista, buscamos o tomamos el primero
+            patient = data.find((p: any) => p.care_group_id === Number(groupId));
+            if (!patient && data.length > 0) {
+                patient = data[0];
             }
+        } else {
+            // Si es un objeto único, lo usamos directamente
+            patient = data;
         }
+
+        if (patient && patient.patient_id) {
+            setCurrentPatientId(patient.patient_id);
+            
+            const medRes = await medicationsApi.listByPatient(patient.patient_id);
+            setMedications(medRes.data);
+        }
+        
     }  catch (error) {
         console.error(error);
         Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudieron cargar los medicamentos.' });
