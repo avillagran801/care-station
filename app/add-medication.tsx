@@ -3,7 +3,7 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import StyledButton from '@/components/ui/StyledButton';
 import StyledTextInput from '@/components/ui/StyledTextInput';
 import Colors from '@/constants/Colors';
-import { medicationApi } from '@/services/api';
+import { medicationsApi } from '@/services/api';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
@@ -31,7 +31,7 @@ export default function AddMedicationScreen() {
 
     setIsLoading(true);
     try {
-        await medicationApi.create({
+        await medicationsApi.create({
             patient_id: Number(patientId),
             name: name,
             description: description
