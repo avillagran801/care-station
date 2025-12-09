@@ -109,11 +109,6 @@ export default function ProfileScreen() {
               icon="people-outline"
               onPress={() => router.push('./contacts')}
             />
-            <ProfileLink
-              title="Historial de Notas"
-              icon="time-outline"
-              onPress={() => router.push('./notes')}
-            />
           </View>
 
           <View style={{ height: 60 }} />

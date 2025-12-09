@@ -1,5 +1,6 @@
 import { AuthProvider } from '@/context/AuthContext';
 import { EditProvider } from '@/context/EditContext';
+import { SelectedGroupProvider } from '@/context/SelectedGroupContext';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -9,6 +10,7 @@ export default function RootLayout() {
     <AuthProvider> 
       <EditProvider>
         <SafeAreaProvider>
+          <SelectedGroupProvider>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />
@@ -23,8 +25,9 @@ export default function RootLayout() {
               <Stack.Screen name="edit-prescription" />
             </Stack>
             <Toast />
-          </SafeAreaProvider>
+          </SelectedGroupProvider>
+        </SafeAreaProvider>
       </EditProvider>
-      </AuthProvider>
+    </AuthProvider>
   );
 }
