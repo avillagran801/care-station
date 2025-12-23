@@ -104,6 +104,25 @@ export default function DailyTasksScreen() {
     return transformRawDataToAgenda(rawTasks);
   }, [rawTasks]);
 
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      await tasksApi.delete(taskId);
+      Toast.show({ type: 'success', text1: 'Tarea eliminada' });
+      handleTasks(); // Reload the list immediately
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "No se pudo eliminar la tarea.");
+    }
+  };
+
+  const handleEditTask = (taskId: number) => {
+    // Navigate to the add-task screen, but passing the ID and mode
+    router.push({
+      pathname: '/(tabs)/addTask',
+      params: { taskId: taskId, mode: 'edit' }
+    });
+  };
+
 
   if (loading){
     return (
@@ -147,6 +166,8 @@ export default function DailyTasksScreen() {
               <DailyAgendaList
                 agenda={agendaItems}
                 selectedDay={selectedDay}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
               />
             </CalendarProvider>
           </View>

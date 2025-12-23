@@ -178,6 +178,7 @@ interface GroupMember {
 
 export default function AddTaskScreen() {
   const router = useRouter();
+  
   const [loading, setLoading] = useState(false);
   
   const { groupId, hydrated } = useSelectedGroup();
@@ -231,22 +232,7 @@ export default function AddTaskScreen() {
     }
   }, [hydrated, groupId]);
 
-  useEffect(() => {
-    if(!hydrated){
-      return;
-    }
-    const newEnd = adjustEndDateForFrequency(startDate, frequency.value, endDate);
-    if(newEnd.getTime() !== endDate.getTime()){
-      setEndDate(newEnd);
-    }
-  }, [frequency, startDate, hydrated]);
-
   const handleCreateTask = async () => {
-    if(!groupId){
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al recuperar las credenciales del grupo.' });
-      return;
-    }
-
     if (!title.trim()) {
         Toast.show({ type: 'error', text1: 'Falta información', text2: 'Debes escribir un título para la tarea.' });
         return;
@@ -263,38 +249,35 @@ export default function AddTaskScreen() {
         return;
     }
 
-    const loopEndDateISO = new Date(
-      endDate.getFullYear(),
-      endDate.getMonth(),
-      endDate.getDate(),
-      0, 0, 0, 0
-    ).toISOString(); // e.g. "2025-12-15T00:00:00.000Z"
-
+    //  FIX THE NAMES to match your PHP Controller
     const payload = {
-      care_group_id: Number(groupId),
-      title,
-      description,
-      assigned_to: assignedTo?.user_id ?? null,
-      category,
-      frequency: frequency.value.toString(),
-      begin_time: finalStart.toISOString(),
-      end_time: finalEnd.toISOString(),
-      loop_end_date: loopEndDateISO
+        care_group_id: Number(groupId),     // <--- REQUIRED by Backend
+        title,
+        description,
+        frequency: repetition,              // <--- Renamed (was repetition)
+        category,
+        begin_time: finalStart.toISOString(), // <--- Renamed (was start_time)
+        end_time: finalEnd.toISOString(),
+        // Note: 'assigned_to' is not yet handled by Backend 'store' function, 
+        // but we can send it for now.
+        // assigned_to: assignedTo?.user_id || null 
     };
-
-    console.log("Payload: ", payload);
-
+    console.log("Enviando Tarea:", payload);
     try {
-      const response = await tasksApi.create(payload);
-      console.log("Response: ", response.data);
-
-      console.log("Tarea creada exitosamente");
-      Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
-      router.replace('/(tabs)/calendar');
-    }
-    catch (error: any){
-      Toast.show({ type: 'error', text1: 'Error al intentar crear la tarea', text2: error.response?.data || error.message });
-      console.error("Error al intentar crear la tarea:", error.response?.data || error.message);
+        // 4. ACTUALLY CALL THE API
+        await tasksApi.create(payload);
+        
+        Toast.show({ type: 'success', text1: 'Tarea creada', text2: 'Se ha agendado correctamente.' });
+        
+        // Return to calendar
+        router.replace('/(tabs)/calendar');
+    } catch (error: any) {
+        console.error("Error creating task:", error.response?.data || error);
+        Toast.show({ 
+            type: 'error', 
+            text1: 'Error al guardar', 
+            text2: 'No se pudo crear la tarea en el servidor.' 
+        });
     }
   };
 
